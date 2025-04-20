@@ -48,7 +48,7 @@ jobs:
         id: check_update
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
-          ./build.sh --report
+          bash -x ./build.sh --report
   build:
     if: ${{ needs.check_update.outputs.updateable  == 1 }}
     runs-on: windows-latest
@@ -75,7 +75,7 @@ jobs:
       - name: build
         id: build
         run: |
-          cd -- "$(cygpath -ua '${{ github.workspace }}')"
-          ./build.sh --build --report
+          # cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          bash -x ./build.sh --build --report
         env:
           PKGEXT: ".pkg.tar.zst"
