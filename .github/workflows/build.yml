@@ -77,3 +77,5 @@ jobs:
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
           ./build.sh --build --report
+        env:
+          PKGEXT: ".pkg.tar.zst"
