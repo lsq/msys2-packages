@@ -8,5 +8,3 @@ Current pacakge list:
 |pacboy|unix|1|git|
 |gettext|ucrt64|0|tar|
 |perl-Locale-Gettext|ucrt64|0|tar|
-yta
-lal
