@@ -50,6 +50,7 @@ jobs:
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
           ./build.sh --report
   build:
+    if: ${{ needs.check_update.outputs.updateable }} == "1"
     runs-on: windows-latest
     needs: check_update
     env:
