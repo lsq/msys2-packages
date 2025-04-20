@@ -1,0 +1,89 @@
+diff -aurN -x '\.git' 000/source/makepatch/makepatch.sh 001/source/makepatch/makepatch.sh
+--- 000/source/makepatch/makepatch.sh
++++ 001/source/makepatch/makepatch.sh
+@@ -85,7 +85,7 @@
+     test -d "patches/${current}"  || terminate "missing files for ${current}"
+     test -d "patches/${previous}" || terminate "missing files for ${previous}"
+     cd patches
+-    local diff="$(command diff -aurN "${previous}" "${current}" | sed -r 's/^([+-]{3}.*)\t.*/\1/')"
++    local diff="$(command diff -aurN -x "\.git" "${previous}" "${current}" | sed -r 's/^([+-]{3}.*)\t.*/\1/')"
+     local result=${?}
+     cd ..
+     if test -t 1
+diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/updpkgver.sh
+--- 000/source/updpkgver/updpkgver.sh
++++ 001/source/updpkgver/updpkgver.sh
+@@ -1,5 +1,6 @@
+ #!/bin/bash
+ 
++set -x
+ usage() { tee <<done-usage
+ 
+     Update Package Version 2016.6.24
+@@ -18,6 +19,7 @@
+     --reset           Remove pending updates
+     --status          List pending updates
+     --versioned       Include versioned names in update
++    --mingw-arch=TYPE Special mingw arch('ucrt64 mingw64 clangd64')
+ 
+     --color           Force enabling colors
+     --no-color        Force disabling colors
+@@ -48,11 +50,13 @@
+             --reset)       option_reset='true'             ;;
+             --status)      option_status='true'            ;;
+             --versioned)   option_versioned='true'         ;;
++            --mingw-arch=*)  option_mingw_arch="${element#*=}" ;;
+             --verbose)     option_verbose='true'           ;;
+             -*)            usage                           ;;
+              *)            directories+=("${element//\\/\/}")
+         esac
+     done
++    option_mingw_arch=${option_mingw_arch:-"mingw64"}
+     configure_colors
+     option_bump
+     option_commit
+@@ -187,7 +191,17 @@
+         current=$((current + 1))
+         component="${zero:-${component}}"
+         if test ${current} -eq ${component_level}; then
+-            component=$((component + 1))
++            if [[ $component =~ ^0[0-9]+ ]]; then
++                local prezero=$(sed -n 's/\(0\+\).*/\1/p' <<< "$component")
++                local fixzero=$(sed -n 's/0\+\(.*\)/\1/p' <<< "$component")
++                if [[ $fixzero =~ .*9$ ]]; then
++                    prezero=${prezero/0/}
++                    fixzero=${fixzero/0/}
++                fi
++                component="${prezero}$((fixzero + 1))"
++            else
++                component=$((component + 1))
++            fi
+             zero=0
+         fi
+         result="${result}${result:+.}${component}"
+@@ -296,6 +310,7 @@
+     local directory="${1}"
+     local name="${2}"
+     local pkgver="${3}"
++    [[ "${pkgver}"   =~ ^([0-9]|[1-9][0-9]+)(\.(0[1-9]))*$ ]] && pkgver="${pkgver/0}"
+     local realname="${name#mingw-w64-}"
+     [[ "${name}"     =~ .*-(git|hg|bzr|svn|cvs)$                      ]] && return 2
+     [[ "${realname}" =~ .*[0-9].* && -z "${option_versioned}"         ]] && return 3
+@@ -407,7 +422,7 @@
+     silent recipe_info "${recipe_name}" pkgname arch
+     recipe_type type pkgname arch
+     if [[ "${type}" = mingw ]]
+-        then nameref_command='makepkg-mingw'
++        then nameref_command="MINGW_ARCH=${option_mingw_arch} makepkg-mingw"
+         else nameref_command='makepkg'
+     fi
+ }
+@@ -469,7 +484,7 @@
+         restore package "${element}"
+         if test -z "${option_verbose}"
+             then build_update package
+-            else build_update package 2>&1 | build_filter '==>'
++            else build_update package #2>&1 | build_filter '==>'
+         fi
+         if test -f "${package[recipe]}.NEW"
+             then failed+=("${element}")

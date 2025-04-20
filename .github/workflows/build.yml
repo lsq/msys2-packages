@@ -1,0 +1,75 @@
+name: MSYS2 PACAKGE BUILD
+
+on:
+  schedule:
+    - cron: "30 0/8 * * 0/3"
+  workflow_dispatch:
+  # push:
+    
+jobs:
+  check_update:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: C:\msys64\bin\bash.exe --login -o igncr -o errexit -o pipefail {0}
+    strategy:
+      matrix:
+        include: [
+          { msystem: ucrt64, toolchain: ucrt-x86_64 }
+          #,
+          #{ msystem: mingw64, toolchain: x86_64 },
+          #{ msystem: mingw32, toolchain: i686 }
+          ]
+      fail-fast: false
+
+    outputs:
+      updateable: ${{ steps.check_update.outputs.updateable}}
+      jobsinfo: ${{ steps.check_update.outputs.jobsinfo}}
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: mingw-w64-${{ matrix.toolchain }}-toolchain base-devel binutils git
+          pacboy: >-
+            aria2:p
+            ca-certificates
+          update: true
+          path-type: inherit
+          #location: C:\
+          release: false
+
+      - name: check update
+        id: check_update
+        run: |
+          cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          ./build.sh --report
+  build:
+    runs-on: windows-latest
+    needs: check_update
+    env:
+      updateable: ${{needs.check_update.outputs.updateable}}
+      jobsinfo: ${{needs.check_update.outputs.jobsinfo}}
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: mingw-w64-${{ matrix.toolchain }}-toolchain base-devel binutils git
+          pacboy: >-
+            aria2:p
+            ca-certificates
+          update: true
+          path-type: inherit
+          #location: C:\
+          release: false
+
+      - name: build
+        id: build
+        run: |
+          cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          ./build.sh --build --report

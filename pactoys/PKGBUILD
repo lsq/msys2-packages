@@ -1,0 +1,66 @@
+# Maintainer: Renato Silva <br.renatosilva@gmail.com>
+
+_realname='pactoys'
+pkgname="${_realname}"
+# pkgver=r66.110a48b
+pkgver=r65.b5fcc0f
+pkgrel=1
+pkgdesc='A set of pacman packaging utilities'
+url='https://github.com/msys2/pactoys'
+license=(BSD)
+arch=(i686 x86_64)
+
+provides=(
+  ${_realname}-git
+  repman-git
+  updpkgver-git
+)
+conflicts=(
+  ${_realname}-git
+  repman-git
+  updpkgver-git
+)
+replaces=(
+  ${_realname}-git
+  repman-git
+  updpkgver-git
+)
+depends=(
+  pacman
+  wget
+)
+makedepends=(
+  gcc
+  git
+)
+install="${_realname}.install"
+# _commit="b5fcc0f3100a20bbb15602c99f4297dbe16ddad9"
+# source=("pactoys::git+https://github.com/msys2/pactoys#commit=${_commit}"
+# source=("pactoys::git+https://github.com/lsq/pactoys#commit=${_commit}"
+source=("pactoys::git+https://github.com/msys2/pactoys"
+        '001-zero-version-mingw-arch.patch'
+        )
+sha256sums=('SKIP'
+        'SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  # git checkout main
+  printf "r%s.%s" $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
+  # printf "%s"  r66.110a48b
+}
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  patch -p1 -i "${srcdir}/001-zero-version-mingw-arch.patch"
+}
+
+build() {
+  cd "${srcdir}/${_realname}"
+  make
+}
+
+package() {
+  cd "${srcdir}/${_realname}"
+  make DESTDIR="${pkgdir}" install
+}

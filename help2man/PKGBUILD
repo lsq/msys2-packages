@@ -1,0 +1,89 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgname="${MINGW_PACKAGE_PREFIX}-help2man"
+_realname=help2man
+pkgver=1.49.2
+pkgrel=1
+pkgdesc="Conversion tool to create man files"
+mingw_arch=('ucrt64')
+arch=('any')
+# arch=('i686' 'x86_64')
+url="https://www.gnu.org/software/help2man/"
+license=('GPL')
+# depends=('perl-Locale-Gettext' 'libintl')
+depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+source=(https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.xz{,.sig}
+        1.40.4-cygwin-nls.patch)
+noextract=("${_realname}-${pkgver}.tar.xz")
+sha256sums=('4d7e4fdef2eca6afe07a2682151cea78781e0a4e8f9622142d9f70c083a2fd4f'
+            'SKIP'
+            'a20d4049c9540bf7012d35d93bff8b44e13f15d969b0656284c9866e070763ad')
+validpgpkeys=("87EA44D150D89615E39A3FEEF0DC8E00B28C5995") # Brendan O'Dea <bod@debian.org>
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg_p2() {
+  for _fname in "$@"
+  do
+    msg2 "Applying ${_fname}"
+    patch -Nbp2 -i "${srcdir}"/${_fname}
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ] || [ -d $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd ${srcdir}
+  bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.xz" 2>/dev/null || MSYS=winsymlinks:lnk tar -xf "${srcdir}/${_realname}-${pkgver}.tar.xz"
+  bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.xz"
+  cd "${srcdir}/${_realname}-${pkgver}"
+  del_file_exists Changelog
+  ln -s debian/changelog ChangeLog
+  ls
+  # [ ! -f "1.40.4-cygwin-nls.patch" ] && cp "1.40.4-cygwin-nls.patch" "1.40.4-cygwin-nls.patch.bak"
+  # sed -i -f ${srcdir}/../patch.sed ${srcdir}/1.40.4-cygwin-nls.patch
+  sed -i "s/RTLD_NEXT/RTLD_NEXTW/g;s/msys-intl-8/libintl-8/;s|/usr/bin/|$MINGW_PREFIX/bin/|;s/ifdef \(__CYGWIN__\)/if defined(\1) || defined(_WIN32)/" ${srcdir}/1.40.4-cygwin-nls.patch
+  apply_patch_with_msg_p2 1.40.4-cygwin-nls.patch
+  autoreconf -ivf
+   # ./configure \
+   #    --build=${MINGW_CHOST} \
+   #    --host=${MINGW_CHOST} \
+   #    --prefix=${MINGW_PREFIX} \
+   #    --mandir=${MINGW_PREFIX}/share/man \
+   #    --infodir=${MINGW_PREFIX}/share/info \
+   #    --libdir=${MINGW_PREFIX}/lib
+   #
+ msg2 "Prepare end ....\n"
+}
+
+build() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  ./configure \
+      --build=${MINGW_CHOST} \
+      --host=${MINGW_CHOST} \
+      --prefix=${MINGW_PREFIX} \
+      --mandir=${MINGW_PREFIX}/share/man \
+      --infodir=${MINGW_PREFIX}/share/info \
+      --libdir=${MINGW_PREFIX}/lib
+
+  make
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+
+  [[ -f "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}" ]] && msg2 "exist ${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
+  ls "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
+
+  sed -i 's|= \(langinfo CODESET\)|= ((\1) =~ /^(\\d+)/) ? "cp$1" : (\1)|;s|/dev/null|$null|;33s|$|my $null = $^O eq "MSWin32" ? "nul" : "/dev/null";\n|;' "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
+}

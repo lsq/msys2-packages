@@ -1,0 +1,54 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+_realname=Locale-Gettext
+pkgname="${MINGW_PACKAGE_PREFIX}-perl-${_realname}"
+pkgver=1.06
+pkgrel=11
+groups=('perl-modules')
+pkgdesc="Permits access from Perl to the gettext() family of functions"
+# arch=('i686' 'x86_64')
+mingw_arch=('ucrt64')
+#arch=('x86_64')
+arch=('any')
+license=('GPL' 'PerlArtistic')
+url="https://search.cpan.org/dist/Locale-gettext/"
+depends=(${MINGW_PACKAGE_PREFIX}-gettext-runtime ${MINGW_PACKAGE_PREFIX}-perl)
+makedepends=("${MINGW_PACKAGE_PREFIX}-perl" "${MINGW_PACKAGE_PREFIX}-make" "${MINGW_PACKAGE_PREFIX}-python" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+options=(!emptydirs)
+source=(${_realname}-${pkgver}.tar.gz::"https://cpan.metacpan.org/authors/id/P/PV/PVANDRY/gettext-${pkgver}.tar.gz"
+"patchmakefile.py"
+)
+sha256sums=('909d47954697e7c04218f972915b787bd1244d75e3bd01620bc167d5bbc49c15'
+'a17a0febbf36be98b01d3fc9e7f22e5450adbf09cb5dc74c9690c8517464b2b3')
+
+build() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  sed -i 's/\("-lintl\)/\1 -liconv/' Makefile.PL
+
+  # install module in vendor directories.
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor
+  echo $pkgdir
+  export pkgdir="$pkgdir/"
+  python $srcdir/patchmakefile.py
+  mingw32-make
+}
+
+check() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  # sed -i '7s|^|ok my $mdir = bindtextdomain("foo"), "bindtextdomain: default dir: mdir";\nlike $mdir, qr/^\\/ucrt64/, "/ucrt64/share/locale";\n|' t/bind.t
+  # sed -i '7s|^|ok my $mdir = bindtextdomain("foo"), "bindtextdomain: default dir: mdir";\n#like $mdir, qr/^\\/ucrt64/, "/ucrt64/share/locale";\n|' t/bind.t
+
+  mingw32-make test
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  mingw32-make DESTDIR="${pkgdir}/" install 
+
+  # fix permissons
+  # find ${pkgdir}/usr -type f \( -name *.dll -o -name *.exe \) | xargs chmod 0755
+
+  # remove perllocal.pod and .packlist
+  # find "${pkgdir}" -name perllocal.pod -delete
+  # find "${pkgdir}" -name .packlist -delete
+}
