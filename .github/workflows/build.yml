@@ -73,6 +73,7 @@ jobs:
       jobsinfo: ${{needs.check_update.outputs.jobsinfo}}
     steps:
       - run: git config --global core.autocrlf false
+        shell: cmd
       - uses: actions/checkout@v4
 
       - uses: msys2/setup-msys2@v2

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -x
+set -x
 usage() { tee <<done-usage
 
     Update Package Version 2016.6.24
