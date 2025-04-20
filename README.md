@@ -1,6 +1,6 @@
 ### :rosette:Some msys2 pacakge
 
-Current pacakge list:
+:bookark_tabs:Current pacakge list:
 
 |pacakge|make type|build force|source type|
 |:---:|:---:|:---:|:---:|

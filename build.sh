@@ -249,14 +249,16 @@ tar_check() {
     local -n first_build=$4
     local oldver newver str
     local -A updateinfo
+    cd "${scriptdir}" || exit 1
     # local update_info pkgver
     # update_info="$(updpkgver --no-build --versioned --color "$item")"
+    pwd
+    ls
     updpkgver --no-build --versioned --color "$item"
     cd "${scriptdir}/${pkg_name}" || exit 1
     oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
     newver=
     if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
-        # pwd
         newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
     elif [[ "${pkg_build_force}" == "1" ]];then
         newver="$oldver"
@@ -299,6 +301,7 @@ git_check() {
 check_update() {
     # local -A updateinfo
     local item first_build_tag release_infos
+    updateable=0
 
     read_config
     # release_info lsq/vime release_infos
@@ -363,13 +366,11 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
 
     declare -A pkginfos updateinfos
-    updateable=0
     # declare -a check_version_list
     # read_config
     # echo "${pkginfos[*]}"
     # echo "${check_version_list[*]}"
     [[ -z "${option_build+true}" ]] && check_update
-    echo lall
     [[ ! -z "${option_report+'true'}" ]] && report "Update information" "${updateinfos[@]}"
     [[ ! -z "${option_verbose+set}" ]] && declare -p pkginfos
     [[ ! -z "${option_verbose+set}" ]] && declare -p updateinfos
