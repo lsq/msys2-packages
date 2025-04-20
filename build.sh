@@ -348,7 +348,7 @@ parse_config() {
 read_config() {
     local contents
 
-    contents="$(sed -n '/|:--/{:c;N;s/\s*\(|.*|\)$/\1/;t c;s/[^\n]*\n//;s/\(.*\)\n.*/\1/;p}' "$scriptdir"/README.md)"
+    contents="$(sed -n '/|:--/{:c;$b e;N;s/\s*\(|.*|\)$/\1/;t c;s/\(.*\)\n.*/\1/;:e;s/[^\n]*\n//;p}' "$scriptdir"/README.md)"
     while read -r line
     do
         parse_config "$line"
