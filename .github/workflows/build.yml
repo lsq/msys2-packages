@@ -26,7 +26,10 @@ jobs:
       updateable: ${{ steps.check_update.outputs.updateable}}
       jobsinfo: ${{ steps.check_update.outputs.jobsinfo}}
     steps:
-      - run: git config --global core.autocrlf false
+      -
+        name: Configure git
+        shell: cmd
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
 
       - uses: msys2/setup-msys2@v2
