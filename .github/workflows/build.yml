@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: C:\msys64\bin\bash.exe --login -o igncr -o errexit -o pipefail {0}
+        shell: msys2 {0}
     strategy:
       matrix:
         include: [
@@ -50,7 +50,7 @@ jobs:
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
           ./build.sh --report
   build:
-    if: ${{ needs.check_update.outputs.updateable }} == "1"
+    if: ${{ needs.check_update.outputs.updateable  == 1 }}
     runs-on: windows-latest
     needs: check_update
     env:
