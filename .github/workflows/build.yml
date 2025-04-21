@@ -98,7 +98,7 @@ jobs:
         id: build
         run: |
           # cd -- "$(cygpath -ua '${{ github.workspace }}')"
-          bash ./build.sh --build --report
+          bash -x ./build.sh --build --report
         env:
           MINGW_ARCH: ${{ matrix.msystem }}
           PKGEXT: ".pkg.tar.zst"
