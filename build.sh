@@ -157,7 +157,7 @@ release_info(){
 }
 
 parse_job_output() {
-    local -n updateinfos=$1
+    # local -n updateinfos=$1
 
     [ -n "$jobsinfo" ] || exit 1
     eval "$jobsinfo"
@@ -171,9 +171,9 @@ check_update_list(){
     CI_REPO_NAME=$GITHUB_REPOSITORY
 }
 build_pacakges() {
-    local updateinfos item updateinfo
+    local item updateinfo
 
-    parse_job_output updateinfos
+    parse_job_output
     download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
 
     for item in ${!updateinfos[@]}
