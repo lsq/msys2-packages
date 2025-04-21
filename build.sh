@@ -176,12 +176,48 @@ parse_job_output() {
 check_update_list(){
     CI_REPO_NAME=$GITHUB_REPOSITORY
 }
+
+build_dependency_check() {
+    local -n pacakge_info="${1}"
+    local make_option f str
+    local oldver newver cur_files orig_files make_type
+    local -A updated_info
+    pacakge="${pacakge_info[pkg_name]}"
+    oldver=${pacakge_info[oldver]}
+    newver=${pacakge_info[newver]}
+    make_type=${pacakge_info[pkg_install_type]}
+    case "$make_type" in
+        unix)
+            make_option=
+            makepkg=makepkg
+            ;;
+        mingw*|ucrt*|clangd*)
+            make_option="MINGW_ARCH=$make_type"
+            makepkg="makepkg-mingw"
+            ;;
+    esac
+
+    cd "$pacakge" || exit 1
+
+    [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
+    # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
+    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --clean --cleanbuild --force --syncdeps --noprepare --nobuild --noextract 
+    [[ -d src ]] && rm -rf src
+}
 build_pacakges() {
     local item updateinfo
 
     parse_job_output
     download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     declare -p updateinfos
+
+
+    for item in ${!updateinfos[@]}
+    do
+        eval "${updateinfos[$item]}"
+        printf "${d_colors[cyan]:: fetch ${updateinfo[pkg_name]}} dependenci...${d_colors[normal]}\n$"
+        build_dependency_check updateinfo
+    done
 
     for item in ${!updateinfos[@]}
     do
@@ -218,7 +254,7 @@ build_pacakge() {
     orig_files=(*)
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
-    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --clean --cleanbuild --force
+    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
 
     ls *.tar.zst
     buildTars=(*.tar.zst)
