@@ -199,6 +199,7 @@ build_pacakge() {
     local make_option f str
     local oldver newver cur_files orig_files make_type
     local -A updated_info
+    pacakge="${pacakge_info[pkg_name]}"
     oldver=${pacakge_info[oldver]}
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
