@@ -270,7 +270,8 @@ build_pacakge() {
         install_flag="-i"
     fi
 
-    cd "$pacakge" || exit 1
+    pwd
+    cd "$scriptdir"/"$pacakge" || exit 1
     orig_files=(*)
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
@@ -282,7 +283,7 @@ build_pacakge() {
     updated_info=([pkg_name]="$pacakge" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$make_type")
     str="$(declare -p updated_info)"
     # release_files=($(ls "$scriptdir"/files))
-    if [ -f "$buildTars[0]" ]; then
+    if [ -f "${buildTars[0]}" ]; then
         updated[$pacakge]="$str"
         cp -rf *.tar.zst ../files
     else
@@ -322,7 +323,6 @@ tar_check() {
     # local update_info pkgver
     # update_info="$(updpkgver --no-build --versioned --color "$item")"
     pwd
-    ls
     updpkgver --no-build --versioned --color "${pkg_name}"
     cd "${scriptdir}/${pkg_name}" || exit 1
     oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
@@ -351,6 +351,7 @@ git_check() {
     local pkg_build_force="${info[pkg_build_force]}"
     local -n first_build="$2"
     local -A updateinfo
+    pwd
     cd "$scriptdir"/"$pkg_name" || exit 1
     source PKGBUILD
     oldver="$pkgver"
