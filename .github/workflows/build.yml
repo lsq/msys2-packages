@@ -4,7 +4,12 @@ on:
   schedule:
     - cron: "30 0/8 * * 0/3"
   workflow_dispatch:
-  # push:
+  push:
+    branches: master
+    paths:
+      - README.md
+      - .github/workflows/build.yml
+
     
 jobs:
   check_update:

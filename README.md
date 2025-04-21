@@ -1,6 +1,6 @@
-### :rosette:Some msys2 pacakge
+### :rosette: Some msys2 pacakge
 
-:bookark_tabs:Current pacakge list:
+:bookmark_tabs: Current pacakge list:
 
 |pacakge|make type|build force|source type|
 |:---:|:---:|:---:|:---:|
