@@ -186,7 +186,7 @@ build_pacakges() {
     for item in ${!updateinfos[@]}
     do
         eval "${updateinfos[$item]}"
-        async "build_pacakge ${updateinfo[*]}" success error
+        async "build_pacakge updateinfo}" success error
     done
 }
 # 需要参数:
@@ -195,13 +195,14 @@ build_pacakges() {
 # 3. new version number 
 # 4. make type: msys2/mingw
 build_pacakge() {
-    local pacakge="${1}"
+    local -n pacakge_info="${1}"
     local make_option f str
-    local oldver newver cur_files orig_files
+    local oldver newver cur_files orig_files make_type
     local -A updated_info
-    oldver=$2
-    newver=$3
-    case "$4" in
+    oldver=${pacakge_info[oldver]}
+    newver=${pacakge_info[newver]}
+    make_type=${pacakge_info[pkg_install_type]}
+    case "$make_type" in
         unix)
             make_option=
             makepkg=makepkg
@@ -220,7 +221,7 @@ build_pacakge() {
 
     ls *.tar.zst
     buildTars=(*.tar.zst)
-    updated_info=([pkg_name]="$pacakge" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$4")
+    updated_info=([pkg_name]="$pacakge" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$make_type")
     str="$(declare -p updated_info)"
     # release_files=($(ls "$scriptdir"/files))
     if [ -f "$buildTars[0]" ]; then
