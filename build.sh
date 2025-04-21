@@ -158,9 +158,12 @@ release_info(){
 
 parse_job_output() {
     # local -n updateinfos=$1
+    local eval_str
+
+    eval_str="$(sed 's/\\/\\\\/g;s/"/\\"/g' <<<"$jobsinfo")"
 
     [ -n "$jobsinfo" ] || exit 1
-    eval "$jobsinfo"
+    eval "$eval_str"
 
     # for item in "${!updateinfos[@]}" 
     # do
