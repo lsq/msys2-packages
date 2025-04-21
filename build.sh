@@ -236,7 +236,7 @@ build_pacakges() {
         if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
             async "build_pacakge updateinfo" success error
         else
-            "build_pacakge updateinfo" success error
+            build_pacakge updateinfo
         fi
     done
 }
