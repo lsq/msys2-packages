@@ -197,7 +197,8 @@ build_dependency_check() {
             ;;
     esac
 
-    cd "$pacakge" || exit 1
+    pwd
+    cd "$scriptdir"/"$pacakge" || exit 1
 
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
@@ -215,7 +216,7 @@ build_pacakges() {
     for item in ${!updateinfos[@]}
     do
         eval "${updateinfos[$item]}"
-        printf "${d_colors[cyan]:: fetch ${updateinfo[pkg_name]}} dependenci...${d_colors[normal]}\n$"
+        printf "${d_colors[cyan]}:: fetch ${updateinfo[pkg_name]} dependenci...${d_colors[normal]}\n$"
         build_dependency_check updateinfo
     done
 
