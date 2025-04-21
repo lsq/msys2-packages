@@ -128,7 +128,7 @@ download_release() {
     repo="$1"
     dirs="$2"
     release_info $repo release_infos
-    # declare -p release_infos
+    declare -p release_infos
     for url in ${release_infos}
     do
         download_url=${url//\"/}
@@ -180,6 +180,7 @@ build_pacakges() {
 
     parse_job_output
     download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
+    declare -p updateinfos
 
     for item in ${!updateinfos[@]}
     do
