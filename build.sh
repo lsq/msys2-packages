@@ -164,6 +164,7 @@ parse_job_output() {
 
     [ -n "$jobsinfo" ] || exit 1
     eval "$jobsinfo"
+    eval "$packages_info"
     # eval "$eval_str"
 
     # for item in "${!updateinfos[@]}" 
@@ -331,7 +332,7 @@ check_update() {
 
     [ "$updateable" == 1  ] && echo "updateable=1" 
     echo "updateable=${updateable}" >> "$GITHUB_OUTPUT"
-    echo "jobsinfo=$(declare -p updateinfos|sed 's/\\/\\\\/g;s/"/\\"/g')" >> $GITHUB_OUTPUT
+    echo "jobsinfo=packages_info=\"$(declare -p updateinfos|sed 's/\\/\\\\/g;s/"/\\"/g')\"" >> $GITHUB_OUTPUT
 }
 parse_config() {
     local pkg_config="${1//|/ }"
