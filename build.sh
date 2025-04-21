@@ -205,25 +205,39 @@ build_dependency_check() {
     eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --clean --cleanbuild --force --syncdeps --noprepare --nobuild --noextract 
     [[ -d src ]] && rm -rf src
 }
+
+sort_array() {
+    local -n A=$1
+    local -n sorted=$2
+    readarray -d '' sorted < <(printf '%s\0' "${!A[@]}" | sort -z)
+}
+
 build_pacakges() {
-    local item updateinfo
+    local updateinfo  index
+    local -a array_index
 
     parse_job_output
     download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     declare -p updateinfos
 
+    # for item in ${!updateinfos[@]}
+    # do
+    #     eval "${updateinfos[$item]}"
+    #     printf "${d_colors[cyan]}:: fetch ${updateinfo[pkg_name]} dependenci...${d_colors[normal]}\n$"
+    #     build_dependency_check updateinfo
+    # done
+    #
 
-    for item in ${!updateinfos[@]}
+    sort_array updateinfos array_index 
+    # for item in ${!updateinfos[@]}
+    for index in "${array_index[@]}"
     do
-        eval "${updateinfos[$item]}"
-        printf "${d_colors[cyan]}:: fetch ${updateinfo[pkg_name]} dependenci...${d_colors[normal]}\n$"
-        build_dependency_check updateinfo
-    done
-
-    for item in ${!updateinfos[@]}
-    do
-        eval "${updateinfos[$item]}"
-        async "build_pacakge updateinfo" success error
+        eval "${updateinfos[$index]}"
+        if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
+            async "build_pacakge updateinfo" success error
+        else
+            "build_pacakge updateinfo" success error
+        fi
     done
 }
 # 需要参数:
@@ -255,7 +269,8 @@ build_pacakge() {
     orig_files=(*)
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
-    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
+    # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
+    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force
 
     ls *.tar.zst
     buildTars=(*.tar.zst)
@@ -289,10 +304,13 @@ build_pacakge() {
 }
 
 tar_check() {
-    local pkg_name="$1"
-    local pkg_install_type="$2"
-    local pkg_build_force="$3"
-    local -n first_build=$4
+    local -n info="$1"
+    local oldver newver str
+    local pkg_name="${info[pkg_name]}"
+    local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_build_force="${info[pkg_build_force]}"
+    local -n first_build="$2"
+
     local oldver newver str
     local -A updateinfo
     cd "${scriptdir}" || exit 1
@@ -300,7 +318,7 @@ tar_check() {
     # update_info="$(updpkgver --no-build --versioned --color "$item")"
     pwd
     ls
-    updpkgver --no-build --versioned --color "$item"
+    updpkgver --no-build --versioned --color "${pkg_name}"
     cd "${scriptdir}/${pkg_name}" || exit 1
     oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
     newver=
@@ -312,19 +330,21 @@ tar_check() {
     if [[ -n "$newver" || "$first_build" == "1" ]];then
         updateable=1
         [[ -z "$newver" ]] && newver=$oldver
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type")
+
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
         str=$(declare -p updateinfo)
-        updateinfos["$pkg_name"]="$str"
+        updateinfos["${info[pkg_build_order]}"]="$str"
     fi
         # cd ..
     # printf "%s\n" "$update_info"
 }
 git_check() {
+    local -n info="$1"
     local oldver newver str
-    local pkg_name="$1"
-    local pkg_install_type="$2"
-    local pkg_build_force="$3"
-    local -n first_build=$4
+    local pkg_name="${info[pkg_name]}"
+    local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_build_force="${info[pkg_build_force]}"
+    local -n first_build="$2"
     local -A updateinfo
     cd "$scriptdir"/"$pkg_name" || exit 1
     source PKGBUILD
@@ -337,9 +357,9 @@ git_check() {
         printf "[1;34m::[$pkg_name][1;37m no updates detected.\n [0m"
     else
         updateable=1
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type")
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
         str=$(declare -p updateinfo)
-        updateinfos["$pkg_name"]="$str"
+        updateinfos["${info[pkg_build_order]}"]="$str"
         [[ $newver != $oldver ]] && printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
     fi
 }
@@ -364,10 +384,10 @@ check_update() {
         eval "${pkginfos[$item]}"
         # declare -p pkginfo
         if [[ "${pkginfo[pkg_source_type]}" =~ tar ]]; then
-            tar_check "$item" "${pkginfo[pkg_install_type]}" "${pkginfo[pkg_build_force]}" first_build_tag
+            tar_check pkginfo first_build_tag
 
         elif [[ "${pkginfo[pkg_source_type]}" =~ git ]];then
-            git_check "$item" "${pkginfo[pkg_install_type]}" "${pkginfo[pkg_build_force]}" first_build_tag
+            git_check pkginfo first_build_tag
         fi
     done
 
@@ -377,20 +397,22 @@ check_update() {
 }
 parse_config() {
     local pkg_config="${1//|/ }"
-    local pkg_name pkg_install_type pkg_build_force pkg_source_type
+    local pkg_build_order pkg_name pkg_install_type pkg_build_force pkg_source_type pkg_as_dependency
     local -A pkginfo
-    IFS=" " read -r pkg_name pkg_install_type pkg_build_force pkg_source_type <<< "$pkg_config"
+    IFS=" " read -r pkg_build_order pkg_name pkg_install_type pkg_build_force pkg_source_type pkg_as_dependency <<< "$pkg_config"
+    pkginfo[pkg_build_order]="${pkg_build_order}"
     pkginfo[pkg_name]="${pkg_name}"
     pkginfo[pkg_install_type]="${pkg_install_type}"
     pkginfo[pkg_build_force]="${pkg_build_force}"
     pkginfo[pkg_source_type]="${pkg_source_type}"
+    pkginfo[pkg_as_dependency]="${pkg_as_dependency}"
 
     # check_version_list+=("${pkg_name}")
 
     local string
     string=$(declare -p pkginfo)
     # printf "%s\n" "$string"
-    pkginfos["${pkg_name}"]="$string"
+    pkginfos["${pkg_build_order}"]="$string"
     # declare -p pkginfos
 }
 
