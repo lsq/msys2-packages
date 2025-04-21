@@ -186,7 +186,7 @@ build_pacakges() {
     for item in ${!updateinfos[@]}
     do
         eval "${updateinfos[$item]}"
-        async "build_pacakge updateinfo}" success error
+        async "build_pacakge updateinfo" success error
     done
 }
 # 需要参数:
