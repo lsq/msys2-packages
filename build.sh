@@ -64,7 +64,7 @@ message() {
 }
 
 header(){
-    local -A d_colors
+    local -Ag d_colors
     d_colors[normal]='\e[0m'
     d_colors[gray]='\e[1;30m'
     d_colors[red]='\e[1;31m'
@@ -186,7 +186,7 @@ build_pacakges() {
     for item in ${!updateinfos[@]}
     do
         eval "${updateinfos[$item]}"
-        async "build_pacakge $item ${updateinfo[@]}" success error
+        async "build_pacakge ${updateinfo[*]}" success error
     done
 }
 # 需要参数:
