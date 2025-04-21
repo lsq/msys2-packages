@@ -160,7 +160,8 @@ parse_job_output() {
     # local -n updateinfos=$1
     local eval_str
 
-    # eval_str="$(sed 's/\\/\\\\/g;s/"/\\"/g' <<<"$jobsinfo")"
+    # eval_str="$(sed 's/\(declare -A\)/\1g/' <<<"$jobsinfo")"
+    jobsinfo="${jobsinfo/-A/-Ag}"
 
     [ -n "$jobsinfo" ] || exit 1
     eval "$jobsinfo"
