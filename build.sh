@@ -250,6 +250,7 @@ build_pacakge() {
     local make_option f str
     local oldver newver cur_files orig_files make_type
     local -A updated_info
+    local install_flag=''
     pacakge="${pacakge_info[pkg_name]}"
     oldver=${pacakge_info[oldver]}
     newver=${pacakge_info[newver]}
@@ -265,12 +266,16 @@ build_pacakge() {
             ;;
     esac
 
+    if [[ "${pacakge_info[pkg_as_dependency]}" == 1 ]];then
+        install_flag="-i"
+    fi
+
     cd "$pacakge" || exit 1
     orig_files=(*)
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
-    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force
+    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force "$install_flag"
 
     ls *.tar.zst
     buildTars=(*.tar.zst)
