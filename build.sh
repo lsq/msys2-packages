@@ -387,7 +387,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # download_release lsq/vim-mingw64-installer "$scriptdir"/files
     # download_release lsq/vime "$scriptdir"/files
     # https://www.geeksforgeeks.org/bash-scripting-how-to-check-if-variable-is-set/
-    [[ ! -z "${option_no_build+'true'}" ]] && build_pacakges
+    [[ ! -z "${option_build+'true'}" ]] && build_pacakges
     [[ ! -z "${option_report+'true'}" ]] && report "Updated packages" "${updated[@]}"
     [[ ! -z "${option_report+'true'}" ]] && report "Failed packages" "${failed[@]}"
 fi
