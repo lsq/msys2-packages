@@ -209,7 +209,7 @@ build_pacakge() {
             makepkg=makepkg
             ;;
         mingw*|ucrt*|clangd*)
-            make_option="MINGW_ARCH=$2"
+            make_option="MINGW_ARCH=$make_type"
             makepkg="makepkg-mingw"
             ;;
     esac
