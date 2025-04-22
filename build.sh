@@ -452,6 +452,8 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # echo "${check_version_list[*]}"
     [[ -z "${option_build+true}" ]] && check_update
     [[ ! -z "${option_report+'true'}" ]] && report "Update information" "${updateinfos[@]}"
+    git config --local user.email "github-actions[bot]@users.noreply.github.com"
+    git config --local user.name "github-actions[bot]"
     [[ ! -z "${option_verbose+set}" ]] && declare -p pkginfos
     [[ ! -z "${option_verbose+set}" ]] && declare -p updateinfos
     # echo "jobsinfo=\"$(declare -p updateinfos|sed 's/\\/\\\\/g;s/"/\\"/g')\"" #>> $GITHUB_OUTPUT
@@ -470,8 +472,6 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     [[ ! -z "${option_build+'true'}" ]] && build_pacakges
     [[ ! -z "${option_report+'true'}" ]] && report "Updated packages" "${updated[@]}"
     [[ ! -z "${option_report+'true'}" ]] && report "Failed packages" "${failed[@]}"
-    git config --local user.email "github-actions[bot]@users.noreply.github.com"
-    git config --local user.name "github-actions[bot]"
     git status
     # git commit -a -m "Add changes"
 fi
