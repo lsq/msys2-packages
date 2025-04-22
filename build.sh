@@ -240,7 +240,12 @@ build_pacakges() {
         fi
     done
     declare -p updated
-    ls "$scriptdir"/files
+    cd "$scriptdir"/files || exit 1
+    ls
+    local zstd_files=(*pkg.tar.zst)
+    if [ -e "${zstd_files[0]}" ];then
+        repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
+    fi
 }
 # 需要参数:
 # 1. pacakge name

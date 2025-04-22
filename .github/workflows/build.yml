@@ -28,9 +28,9 @@ jobs:
           ]
       fail-fast: false
 
-    outputs:
-      updateable: ${{ steps.check_update.outputs.updateable}}
-      jobsinfo: ${{ steps.check_update.outputs.jobsinfo}}
+    # outputs:
+    #   updateable: ${{ steps.check_update.outputs.updateable}}
+    #   jobsinfo: ${{ steps.check_update.outputs.jobsinfo}}
     steps:
       -
         name: Configure git
@@ -55,50 +55,51 @@ jobs:
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
           bash ./build.sh --report
-  build:
-    if: ${{ needs.check_update.outputs.updateable  == 1 }}
-
-    defaults:
-      run:
-        shell: msys2 {0}
-
-    strategy:
-      matrix:
-        include: [
-          { msystem: ucrt64, toolchain: ucrt-x86_64 }
-          #,
-          #{ msystem: mingw64, toolchain: x86_64 },
-          #{ msystem: mingw32, toolchain: i686 }
-          ]
-      fail-fast: false
-
-    runs-on: windows-latest
-    needs: check_update
-    env:
-      updateable: ${{needs.check_update.outputs.updateable}}
-      jobsinfo: ${{needs.check_update.outputs.jobsinfo}}
-    steps:
-      - run: git config --global core.autocrlf false
-        shell: cmd
-      - uses: actions/checkout@v4
-
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          install: mingw-w64-${{ matrix.toolchain }}-toolchain base-devel binutils git
-          pacboy: >-
-            aria2:p
-            ca-certificates
-          update: true
-          path-type: inherit
-          #location: C:\
-          release: false
 
       - name: build
+        if: ${{ steps.check_update.outputs.updateable == 1 }}
         id: build
         run: |
-          # cd -- "$(cygpath -ua '${{ github.workspace }}')"
           bash -x ./build.sh --build --report
         env:
           MINGW_ARCH: ${{ matrix.msystem }}
           PKGEXT: ".pkg.tar.zst"
+          updateable: ${{steps.check_update.outputs.updateable}}
+          jobsinfo: ${{steps.check_update.outputs.jobsinfo}}
+
+      # - name: Delete old release assets
+      #   uses: mknejp/delete-release-assets@v1
+      #   with:
+      #     # token: ${{ github.token }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     tag: Latest# This may also be of the form 'refs/tags/staging'
+      #
+      #     # Optional another repository
+      #     repository: owner/repo
+      #
+      #     # Pick one of:
+      #     # 1. a single file name
+      #     assets: changelog.txt
+      #     # 2. a glob pattern (note the quotes if it begins with *)
+      #     assets: '*.zip'
+      #     # 3. multiple names/globs, one per line
+      #     assets: |
+      #       changelog.txt
+      #       *.zip
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ steps.check_update.outputs.updateable == 1 }}
+        with:
+          files: |
+            files/*.pkg.tar.zst
+            files/mlsq*
+      #      ./DeviceTree.zip
+      #    name: TWRP_Device_Tree-${{ github.run_id }}
+          name: latest
+      #    tag_name: ${{ github.run_id }}
+          tag_name: latest
+      #    body: DeviceTree for twrp
+          # body_path: gitlog.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
