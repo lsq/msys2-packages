@@ -252,6 +252,7 @@ build_pacakge() {
     local make_option f str
     local pacakge oldver newver cur_files orig_files make_type
     local -A updated_info
+    local -Ag updated failed
     local install_flag=''
     package="${pacakge_info[pkg_name]}"
     oldver=${pacakge_info[oldver]}
@@ -275,7 +276,10 @@ build_pacakge() {
     pwd
     cd "$scriptdir"/"$package" || exit 1
     orig_files=(*)
-    [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
+    if [[ $oldver != $newver ]];then
+       sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
+       git commit -a -m "update to version $newver."
+    fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
     eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force "$install_flag"
