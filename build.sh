@@ -130,12 +130,13 @@ download_release() {
     [ ! -d "$dirs" ] && mkdir -p "$dirs"
     release_info $repo release_infos
     declare -p release_infos
-    for url in ${release_infos}
+    for url in ${release_infos[@]}
     do
         download_url=${url//\"/}
         fileName=$(basename "${download_url}")
         async "download_url $download_url $dirs $fileName" success error
     done
+    wait
     ls "$dirs"/
 }
 release_info(){
@@ -177,14 +178,15 @@ parse_job_output() {
 }
 check_old_exist(){
     local pkg_name oldver zstfile
+    local -n flag=$3
 
     pkg_name="$1"
     oldver="$2"
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
     readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" && return 1
-    return 0
+    test -z "$zstfile" && flag=1
+    flag=0
 }
 
 build_dependency_check() {
@@ -341,7 +343,7 @@ tar_check() {
     updpkgver --no-build --versioned --color "${pkg_name}"
     cd "${scriptdir}/${pkg_name}" || exit 1
     oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
-    release_exist=$(check_old_exist "$pkg_name" "$oldver")
+    check_old_exist "$pkg_name" "$oldver" release_exist
     newver=
     if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
         newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
@@ -375,7 +377,7 @@ git_check() {
     ofiles=(*)
     source PKGBUILD
     oldver="$pkgver"
-    release_exist=$(check_old_exist "$pkg_name" "$oldver")
+    check_old_exist "$pkg_name" "$oldver" release_exist
     makepkg -od
     local srcdir="src"
     newver=$(pkgver)

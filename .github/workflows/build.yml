@@ -87,6 +87,8 @@ jobs:
       #       changelog.txt
       #       *.zip
 
+      # https://github.com/marketplace/actions/create-release
+      # https://github.com/marketplace/actions/create-update-github-release
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         if: ${{ steps.check_update.outputs.updateable == 1 }}
