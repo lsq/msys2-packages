@@ -239,6 +239,8 @@ build_pacakges() {
             build_pacakge updateinfo
         fi
     done
+    declare -p updated
+    ls "$scriptdir"/files
 }
 # 需要参数:
 # 1. pacakge name
@@ -248,10 +250,10 @@ build_pacakges() {
 build_pacakge() {
     local -n pacakge_info="${1}"
     local make_option f str
-    local oldver newver cur_files orig_files make_type
+    local pacakge oldver newver cur_files orig_files make_type
     local -A updated_info
     local install_flag=''
-    pacakge="${pacakge_info[pkg_name]}"
+    package="${pacakge_info[pkg_name]}"
     oldver=${pacakge_info[oldver]}
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
@@ -271,7 +273,7 @@ build_pacakge() {
     fi
 
     pwd
-    cd "$scriptdir"/"$pacakge" || exit 1
+    cd "$scriptdir"/"$package" || exit 1
     orig_files=(*)
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
@@ -280,21 +282,21 @@ build_pacakge() {
 
     ls *.tar.zst
     buildTars=(*.tar.zst)
-    updated_info=([pkg_name]="$pacakge" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$make_type")
+    updated_info=([pkg_name]="$package" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$make_type")
     str="$(declare -p updated_info)"
     # release_files=($(ls "$scriptdir"/files))
     if [ -f "${buildTars[0]}" ]; then
-        updated[$pacakge]="$str"
+        updated["${package}"]="$str"
         cp -rf *.tar.zst ../files
     else
-        failed[$pacakge]="$str"
+        failed["${package}"]="$str"
     fi
     if [[ $oldver != $newver ]]; then
         # if printf "%s\0"  "${release_files[@]}"| grep -xqz -- ".*${pacakge}.*${oldver}.*.tar.zst";then
             # echo ".*${pacakge}.*${oldver}.*.tar.zst"
         # fi
         # https://unix.stackexchange.com/questions/577309/find-regular-expression-in-name
-        find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkgn.*$vers.*.tar.zst" -printf "%f\n" 
+        find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$package.*$newver.*.tar.zst" -printf "%f\n" 
     fi
     cur_files=(*)
     for f in "${cur_files[@]}"
@@ -464,4 +466,8 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     [[ ! -z "${option_build+'true'}" ]] && build_pacakges
     [[ ! -z "${option_report+'true'}" ]] && report "Updated packages" "${updated[@]}"
     [[ ! -z "${option_report+'true'}" ]] && report "Failed packages" "${failed[@]}"
+    git config --local user.email "github-actions[bot]@users.noreply.github.com"
+    git config --local user.name "github-actions[bot]"
+    git status
+    # git commit -a -m "Add changes"
 fi
