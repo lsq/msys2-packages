@@ -225,7 +225,7 @@ sort_array() {
 }
 
 build_pacakges() {
-    local updateinfo  index
+    local updateinfo  index db_files
     local -a array_index
 
     parse_job_output
@@ -255,7 +255,9 @@ build_pacakges() {
     cd "$scriptdir"/files || exit 1
     ls
     local zstd_files=(*pkg.tar.zst)
+    db_files=(mlsq*)
     if [ -e "${zstd_files[0]}" ];then
+        test -n db_files && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
     fi
 }
