@@ -123,7 +123,7 @@ e
 }
 
 download_release() {
-    local release_infos repo url fileName download_url dirs
+    local repo url fileName download_url dirs
 
     repo="$1"
     dirs="$2"
@@ -173,8 +173,16 @@ parse_job_output() {
     # done
 
 }
-check_update_list(){
-    CI_REPO_NAME=$GITHUB_REPOSITORY
+check_old_exist(){
+    local pkg_name oldver zstfile
+
+    pkg_name="$1"
+    oldver="$2"
+
+    # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
+    readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
+    test -z "$zstfile" && return 1
+    return 0
 }
 
 build_dependency_check() {
@@ -217,7 +225,7 @@ build_pacakges() {
     local -a array_index
 
     parse_job_output
-    download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
+    # download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     declare -p updateinfos
 
     # for item in ${!updateinfos[@]}
@@ -307,6 +315,84 @@ build_pacakge() {
         # https://unix.stackexchange.com/questions/577309/find-regular-expression-in-name
         find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$package.*$newver.*.tar.zst" -printf "%f\n" 
     fi
+    remove_new_file orig_files
+    ls *.tar.zst
+}
+
+tar_check() {
+    local -n info="$1"
+    local oldver newver str release_exist
+    local pkg_name="${info[pkg_name]}"
+    local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_build_force="${info[pkg_build_force]}"
+    local -n first_build="$2"
+    local -a ofiles
+
+    local oldver newver str
+    local -A updateinfo
+    cd "${scriptdir}" || exit 1
+
+    # local update_info pkgver
+    # update_info="$(updpkgver --no-build --versioned --color "$item")"
+    pwd
+    ofiles=(*)
+    updpkgver --no-build --versioned --color "${pkg_name}"
+    cd "${scriptdir}/${pkg_name}" || exit 1
+    oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
+    release_exist=$(check_old_exist "$pkg_name" "$oldver")
+    newver=
+    if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
+        newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
+    elif [[ "${pkg_build_force}" == "1" ]];then
+        newver="$oldver"
+    fi
+    if [[ -n "$newver" || "$first_build" == "1" || $release_exist == "1" ]];then
+        updateable=1
+        [[ -z "$newver" ]] && newver=$oldver
+
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
+        str=$(declare -p updateinfo)
+        updateinfos["${info[pkg_build_order]}"]="$str"
+    fi
+    remove_new_file ofiles
+        # cd ..
+    # printf "%s\n" "$update_info"
+}
+git_check() {
+    local -n info="$1"
+    local oldver newver str release_exist
+    local -a ofiles
+    local pkg_name="${info[pkg_name]}"
+    local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_build_force="${info[pkg_build_force]}"
+    local -n first_build="$2"
+    local -A updateinfo
+    pwd
+    cd "$scriptdir"/"$pkg_name" || exit 1
+
+    ofiles=(*)
+    source PKGBUILD
+    oldver="$pkgver"
+    release_exist=$(check_old_exist "$pkg_name" "$oldver")
+    makepkg -od
+    local srcdir="src"
+    newver=$(pkgver)
+
+    if [[ "$oldver" == "$newver" && "$pkg_build_force" == "0" && "$first_build" != "1" && $release_exist == "0" ]]; then
+        printf "[1;34m::[$pkg_name][1;37m no updates detected.\n [0m"
+    else
+        updateable=1
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
+        str=$(declare -p updateinfo)
+        updateinfos["${info[pkg_build_order]}"]="$str"
+        [[ $newver != $oldver ]] && printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
+    fi
+    remove_new_file ofiles
+}
+
+remove_new_file() {
+    local cur_files f
+    local -n orig_files=$1
     cur_files=(*)
     for f in "${cur_files[@]}"
     do
@@ -317,68 +403,6 @@ build_pacakge() {
         echo "now remove $f"
         rm -rf "$f"
     done
-    ls *.tar.zst
-}
-
-tar_check() {
-    local -n info="$1"
-    local oldver newver str
-    local pkg_name="${info[pkg_name]}"
-    local pkg_install_type="${info[pkg_install_type]}"
-    local pkg_build_force="${info[pkg_build_force]}"
-    local -n first_build="$2"
-
-    local oldver newver str
-    local -A updateinfo
-    cd "${scriptdir}" || exit 1
-    # local update_info pkgver
-    # update_info="$(updpkgver --no-build --versioned --color "$item")"
-    pwd
-    updpkgver --no-build --versioned --color "${pkg_name}"
-    cd "${scriptdir}/${pkg_name}" || exit 1
-    oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
-    newver=
-    if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
-        newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
-    elif [[ "${pkg_build_force}" == "1" ]];then
-        newver="$oldver"
-    fi
-    if [[ -n "$newver" || "$first_build" == "1" ]];then
-        updateable=1
-        [[ -z "$newver" ]] && newver=$oldver
-
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
-        str=$(declare -p updateinfo)
-        updateinfos["${info[pkg_build_order]}"]="$str"
-    fi
-        # cd ..
-    # printf "%s\n" "$update_info"
-}
-git_check() {
-    local -n info="$1"
-    local oldver newver str
-    local pkg_name="${info[pkg_name]}"
-    local pkg_install_type="${info[pkg_install_type]}"
-    local pkg_build_force="${info[pkg_build_force]}"
-    local -n first_build="$2"
-    local -A updateinfo
-    pwd
-    cd "$scriptdir"/"$pkg_name" || exit 1
-    source PKGBUILD
-    oldver="$pkgver"
-    makepkg -od
-    local srcdir="src"
-    newver=$(pkgver)
-
-    if [[ "$oldver" == "$newver" && "$pkg_build_force" == "0" && "$first_build" != "1" ]]; then
-        printf "[1;34m::[$pkg_name][1;37m no updates detected.\n [0m"
-    else
-        updateable=1
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
-        str=$(declare -p updateinfo)
-        updateinfos["${info[pkg_build_order]}"]="$str"
-        [[ $newver != $oldver ]] && printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
-    fi
 }
 
 check_update() {
@@ -388,7 +412,8 @@ check_update() {
 
     read_config
     # release_info lsq/vime release_infos
-    release_info "$GITHUB_REPOSITORY" release_infos
+    download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
+    # release_info "$GITHUB_REPOSITORY" release_infos
     # declare -p release_infos
     if [[ ${#release_infos[@]} == 0 ]];then
         first_build_tag=1
