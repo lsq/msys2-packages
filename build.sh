@@ -136,6 +136,7 @@ download_release() {
         fileName=$(basename "${download_url}")
         async "download_url $download_url $dirs $fileName" success error
     done
+    ls "$dirs"/
 }
 release_info(){
     local repo json
@@ -393,12 +394,12 @@ git_check() {
 
 remove_new_file() {
     local cur_files f
-    local -n orig_files=$1
+    local -n orig_list=$1
     cur_files=(*)
     for f in "${cur_files[@]}"
     do
         # if [[ "${orig_files[@]}" =~ "$f" ]];then
-        if [[ " ${orig_files[*]} " =~ " ${f} " ]];then
+        if [[ " ${orig_list[*]} " =~ " ${f} " ]];then
             continue
         fi
         echo "now remove $f"
