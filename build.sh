@@ -118,7 +118,6 @@ download_url() {
     [[ -z $fileName ]] && fileName=$(basename ${download_url})
     curl -d $zstdir -sL ${download_url} -o $fileName || die "$fileName downloading failed!"
     echo "$fileName download successed."
-e
 
 }
 
@@ -127,6 +126,8 @@ download_release() {
 
     repo="$1"
     dirs="$2"
+    # [ ! -d "$scriptdir"/files ] && mkdir "$scriptdir"/files
+    [ ! -d "$dirs" ] && mkdir -p "$dirs"
     release_info $repo release_infos
     declare -p release_infos
     for url in ${release_infos}
@@ -495,7 +496,6 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     #declare -p lsqs
     #eval "${lsqs[perl-Locale-Gettext]}"
     #declare -p lsq
-    [ ! -d "$scriptdir"/files ] && mkdir "$scriptdir"/files
     # download_release lsq/vim-mingw64-installer "$scriptdir"/files
     # download_release lsq/vime "$scriptdir"/files
     # https://www.geeksforgeeks.org/bash-scripting-how-to-check-if-variable-is-set/
