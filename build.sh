@@ -116,7 +116,7 @@ download_url() {
     local zstdir="$2"
     local fileName="$3"
     [[ -z $fileName ]] && fileName=$(basename ${download_url})
-    curl -d $zstdir -sL ${download_url} -o $fileName || die "$fileName downloading failed!"
+    curl --create-dirs --output-dir $zstdir -sL ${download_url} -o $fileName || die "$fileName downloading failed!"
     echo "$fileName download successed."
 
 }
