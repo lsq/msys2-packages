@@ -339,7 +339,9 @@ tar_check() {
     # local update_info pkgver
     # update_info="$(updpkgver --no-build --versioned --color "$item")"
     pwd
+    cd "${scriptdir}/${pkg_name}" || exit 1
     ofiles=(*)
+    cd -
     updpkgver --no-build --versioned --color "${pkg_name}"
     cd "${scriptdir}/${pkg_name}" || exit 1
     oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
