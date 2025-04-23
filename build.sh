@@ -321,6 +321,8 @@ build_pacakge() {
     if [[ $oldver != $newver ]];then
        sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
        git commit -a -m "update to version $newver."
+   else
+       echo "\* rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
