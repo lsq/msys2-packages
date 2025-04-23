@@ -249,7 +249,7 @@ build_pacakges() {
     local -a array_index
     local gitoldver
 
-    gitoldver=$(git -log -1 --format=%h)
+    gitoldver=$(git log -1 --format=%h)
     parse_job_output
     # download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     declare -p updateinfos
