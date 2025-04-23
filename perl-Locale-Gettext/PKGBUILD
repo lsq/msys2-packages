@@ -2,7 +2,7 @@
 
 _realname=Locale-Gettext
 pkgname="${MINGW_PACKAGE_PREFIX}-perl-${_realname}"
-pkgver=1.06
+pkgver=1.07
 pkgrel=11
 groups=('perl-modules')
 pkgdesc="Permits access from Perl to the gettext() family of functions"
