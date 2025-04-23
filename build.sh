@@ -111,6 +111,26 @@ report() {
 }
 
 
+git_log() {
+    local git_old=$1
+    
+    cd "$scriptdir" || exit 1
+    local git_now=$(git log -1 --format=%h)
+    [[ $git_old == $git_now ]] && echo "pushflag=0" >> $GITHUB_ENV && return 0
+    echo "pushflag=1" >> $GITHUB_ENV 
+    # git log --format=%B -n 1 $(git log -1 --pretty=format:"%h") | cat -
+    # git rev-list --max-count=1 --no-commit-header --format=%B <commit>
+    # https://stackoverflow.com/questions/3357280/print-commit-message-of-a-given-commit-in-git
+    local commiturl=https://github.com/lsq/msys2-packages/commit/
+    local log_md=$(git log --pretty='format:%h %H %s' $git_old..HEAD | sed \
+        -e 's/[][_*^<`\\]/\\&/g' \
+    -e "s#^\([0-9a-f]*\) \([0-9.a-z]*\)#* [\1]($commiturl\2)#" \
+    -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#")
+    local log_plain=$(git log --pretty='format:* %s' $git_old..HEAD | sed \
+    -e 's/^/* /g')
+    echo "$log_md" | sed -e ':a;N;$!ba;s/\n/\\n/g' > "$scriptdir"/gitlog.txt
+
+}
 download_url() {
     local download_url="$1"
     local zstdir="$2"
@@ -227,7 +247,9 @@ sort_array() {
 build_pacakges() {
     local updateinfo  index db_files
     local -a array_index
+    local gitoldver
 
+    gitoldver=$(git -log -1 --format=%h)
     parse_job_output
     # download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     declare -p updateinfos
@@ -257,9 +279,10 @@ build_pacakges() {
     local zstd_files=(*pkg.tar.zst)
     db_files=(mlsq*)
     if [ -e "${zstd_files[0]}" ];then
-        test -n db_files && rm -rf mlsq*
+        test -n "$db_files" && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
     fi
+    git_log "$gitoldver"
 }
 # 需要参数:
 # 1. pacakge name

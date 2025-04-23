@@ -89,6 +89,14 @@ jobs:
 
       # https://github.com/marketplace/actions/create-release
       # https://github.com/marketplace/actions/create-update-github-release
+      - name: Push changes
+        if: ${{ env.pushflag == 1 }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+          # force_with_lease: true
+
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         if: ${{ steps.check_update.outputs.updateable == 1 }}
@@ -102,6 +110,6 @@ jobs:
       #    tag_name: ${{ github.run_id }}
           tag_name: latest
       #    body: DeviceTree for twrp
-          # body_path: gitlog.txt
+          body_path: gitlog.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
