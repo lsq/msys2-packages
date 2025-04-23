@@ -2,7 +2,7 @@
 
 pkgname="${MINGW_PACKAGE_PREFIX}-help2man"
 _realname=help2man
-pkgver=1.49.2
+pkgver=1.49.3
 pkgrel=1
 pkgdesc="Conversion tool to create man files"
 mingw_arch=('ucrt64')
