@@ -205,7 +205,7 @@ check_old_exist(){
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
     readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" && flag=1
+    test -z "$zstfile" && {echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files"; flag=1 }
     flag=0
 }
 
@@ -365,7 +365,7 @@ tar_check() {
 
     # local update_info pkgver
     # update_info="$(updpkgver --no-build --versioned --color "$item")"
-    pwd
+    # pwd
     cd "${scriptdir}/${pkg_name}" || exit 1
     ofiles=(*)
     cd -
@@ -400,7 +400,7 @@ git_check() {
     local pkg_build_force="${info[pkg_build_force]}"
     local -n first_build="$2"
     local -A updateinfo
-    pwd
+    # pwd
     cd "$scriptdir"/"$pkg_name" || exit 1
 
     ofiles=(*)
@@ -455,7 +455,7 @@ check_update() {
     fi
     for item in "${!pkginfos[@]}"
     do
-        echo "[1;34m::[$item][1;37m Checking updates [0m"
+        echo "[1;34m::[$item][1;37m Checking ["${pkginfos[$item]}"] updates [0m"
         eval "${pkginfos[$item]}"
         # declare -p pkginfo
         if [[ "${pkginfo[pkg_source_type]}" =~ tar ]]; then

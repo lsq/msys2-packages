@@ -6,6 +6,6 @@
 |:---:|:---:|:---:|:---:|:---:|:---:|
 |0|pactoys|unix|0|git|0|
 |1|meson|ucrt64|0|tar|0|
-|2|gettext|ucrt64|0|tar|1|
+|2|gettext|ucrt64|1|tar|1|
 |3|perl-Locale-Gettext|ucrt64|0|tar|1|
 |4|help2man|ucrt64|0|tar|1|
