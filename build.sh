@@ -205,7 +205,7 @@ check_old_exist(){
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
     readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" && {echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files"; flag=1 }
+    test -z "$zstfile" && { echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files"; flag=1 }
     flag=0
 }
 
@@ -455,8 +455,8 @@ check_update() {
     fi
     for item in "${!pkginfos[@]}"
     do
-        echo "[1;34m::[$item][1;37m Checking ["${pkginfos[$item]}"] updates [0m"
         eval "${pkginfos[$item]}"
+        echo "[1;34m::[$item][1;37m Checking ["${pkginfo[pkg_name]}"] updates [0m"
         # declare -p pkginfo
         if [[ "${pkginfo[pkg_source_type]}" =~ tar ]]; then
             tar_check pkginfo first_build_tag
