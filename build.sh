@@ -205,7 +205,7 @@ check_old_exist(){
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
     readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" &&  echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 
+    test -z "$zstfile" &&  echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 && return 0
     flag=0
 }
 

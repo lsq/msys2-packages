@@ -54,7 +54,7 @@ jobs:
         id: check_update
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
-          bash -x ./build.sh --report
+          bash  ./build.sh --report
 
       - name: build
         if: ${{ steps.check_update.outputs.updateable == 1 }}
