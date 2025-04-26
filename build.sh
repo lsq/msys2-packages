@@ -273,6 +273,7 @@ build_pacakges() {
             build_pacakge updateinfo
         fi
     done
+    wait
     declare -p updated
     cd "$scriptdir"/files || exit 1
     ls
