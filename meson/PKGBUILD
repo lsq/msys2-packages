@@ -54,6 +54,7 @@ prepare() {
 
   apply_patch_with_msg \
     color-term.patch \
+    0001-shebang_cmd.patch \
     0002-Default-to-sys.prefix-as-the-default-prefix.patch \
     0004-fix-gtk-doc.patch \
     install-man.patch

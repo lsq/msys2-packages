@@ -348,7 +348,6 @@ build_pacakge() {
         find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$package.*$newver.*.tar.zst" -printf "%f\n" 
     fi
     remove_new_file orig_files
-    ls *.tar.zst
 }
 
 tar_check() {
