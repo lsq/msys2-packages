@@ -194,7 +194,7 @@ check_old_exist(){
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
     readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" &&  echo "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 && return 0
+    test -z "$zstfile" &&  echo -e "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 && return 0
     flag=0
 }
 
@@ -324,11 +324,11 @@ build_pacakge() {
     str="$(declare -p updated_info)"
     # release_files=($(ls "$scriptdir"/files))
     if [ -f "${buildTars[0]}" ]; then
-        echo "${d_colors[yellow]}${package} built successed."
+        echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built successed."
         updated["${package}"]="$str"
         cp -rf *.tar.zst ../files
     else
-        echo "${d_colors[yellow]}${package} built failed."
+        echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built failed."
         failed["${package}"]="$str"
     fi
     if [[ $oldver != $newver ]]; then
