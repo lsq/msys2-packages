@@ -11,8 +11,8 @@ arch=('any')
 url="https://www.gnu.org/software/help2man/"
 license=('GPL')
 # depends=('perl-Locale-Gettext' 'libintl')
-depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
-makedepends=("${MINGW_PACKAGE_PREFIX}-perl" "${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime" "${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext")
+depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext" "${MINGW_PACKAGE_PREFIX}-gettext-runtime" "${MINGW_PACKAGE_PREFIX}-dlfcn")
+makedepends=("${MINGW_PACKAGE_PREFIX}-perl" "${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime" "${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext" "${MINGW_PACKAGE_PREFIX}-dlfcn")
 source=(https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.xz{,.sig}
         1.40.4-cygwin-nls.patch)
 noextract=("${_realname}-${pkgver}.tar.xz")
