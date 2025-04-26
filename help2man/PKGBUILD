@@ -75,7 +75,7 @@ build() {
       --infodir=${MINGW_PREFIX}/share/info \
       --libdir=${MINGW_PREFIX}/lib
 
-  grep 'with-gettext' Makefile
+  sed -n '/with-gettext/p' Makefile
   make
 }
 

@@ -64,7 +64,6 @@ message() {
 }
 
 header(){
-    local -Ag d_colors
     d_colors[normal]='\e[0m'
     d_colors[gray]='\e[1;30m'
     d_colors[red]='\e[1;31m'
@@ -248,8 +247,6 @@ build_pacakges() {
     local updateinfo  index db_files
     local -a array_index
     local gitoldver
-
-    sed -i 
 
     gitoldver=$(git log -1 --format=%h)
     parse_job_output
@@ -513,6 +510,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
 
     declare -A pkginfos updateinfos
+    declare -Ag d_colors
     # declare -a check_version_list
     # read_config
     # echo "${pkginfos[*]}"
