@@ -39,7 +39,7 @@ diff -aurN -x '\.git' 0000/mesonbuild/programs.py 0001/mesonbuild/programs.py
 +    def _get_win_path(cyg_path):
 +        return subprocess.check_output(["cygpath", "-w", cyg_path]).strip(b"\n").decode()
 +
-+    @staticmethod
++    #@staticmethod
 +    def _shebang_to_cmd(self, script: str) -> T.Optional[T.List[str]]:
          """
          Check if the file has a shebang and manually parse it to figure out
