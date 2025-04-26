@@ -64,16 +64,6 @@ message() {
 }
 
 header(){
-    d_colors[normal]='\e[0m'
-    d_colors[gray]='\e[1;30m'
-    d_colors[red]='\e[1;31m'
-    d_colors[green]='\e[1;32m'
-    d_colors[yellow]='\e[1;33m'
-    d_colors[blue]='\e[1;34m'
-    d_colors[purple]='\e[1;35m'
-    d_colors[cyan]='\e[1;36m'
-    d_colors[white]='\e[1;37m'
-
     local title="${1}"
     printf "${d_colors[green]}::"
     printf "${d_colors[white]} %s" "${title}"
@@ -511,6 +501,16 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
 
     declare -A pkginfos updateinfos
     declare -Ag d_colors
+    d_colors[normal]='\e[0m'
+    d_colors[gray]='\e[1;30m'
+    d_colors[red]='\e[1;31m'
+    d_colors[green]='\e[1;32m'
+    d_colors[yellow]='\e[1;33m'
+    d_colors[blue]='\e[1;34m'
+    d_colors[purple]='\e[1;35m'
+    d_colors[cyan]='\e[1;36m'
+    d_colors[white]='\e[1;37m'
+
     # declare -a check_version_list
     # read_config
     # echo "${pkginfos[*]}"
