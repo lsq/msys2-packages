@@ -11,8 +11,8 @@ arch=('any')
 url="https://www.gnu.org/software/help2man/"
 license=('GPL')
 # depends=('perl-Locale-Gettext' 'libintl')
-depends=( "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
-makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext" "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("${MINGW_PACKAGE_PREFIX}-perl" "${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" "${MINGW_PACKAGE_PREFIX}-gettext-runtime" "${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext")
 source=(https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.xz{,.sig}
         1.40.4-cygwin-nls.patch)
 noextract=("${_realname}-${pkgver}.tar.xz")
@@ -75,16 +75,18 @@ build() {
       --infodir=${MINGW_PREFIX}/share/info \
       --libdir=${MINGW_PREFIX}/lib
 
+  grep 'with-gettext' Makefile
   make
 }
 
 package() {
-    depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext")
+    # depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext")
   cd "${srcdir}/${_realname}-${pkgver}"
   make DESTDIR="${pkgdir}" install
 
   [[ -f "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}" ]] && msg2 "exist ${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
   ls "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
 
+  sed -n '24,36p' "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
   sed -i 's|= \(langinfo CODESET\)|= ((\1) =~ /^(\\d+)/) ? "cp$1" : (\1)|;s|/dev/null|$null|;33s|$|my $null = $^O eq "MSWin32" ? "nul" : "/dev/null";\n|;' "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
 }

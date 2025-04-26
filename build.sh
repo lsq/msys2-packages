@@ -249,6 +249,8 @@ build_pacakges() {
     local -a array_index
     local gitoldver
 
+    sed -i 
+
     gitoldver=$(git log -1 --format=%h)
     parse_job_output
     # download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
@@ -335,9 +337,11 @@ build_pacakge() {
     str="$(declare -p updated_info)"
     # release_files=($(ls "$scriptdir"/files))
     if [ -f "${buildTars[0]}" ]; then
+        echo "${d_colors[yellow]}${package} built successed."
         updated["${package}"]="$str"
         cp -rf *.tar.zst ../files
     else
+        echo "${d_colors[yellow]}${package} built failed."
         failed["${package}"]="$str"
     fi
     if [[ $oldver != $newver ]]; then
