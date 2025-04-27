@@ -1,0 +1,59 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+_realname=zenity
+# pkgbase=mingw-w64-${_realname}-git
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
+pkgver=4.1.90
+pkgrel=1
+pkgdesc="The GNOME port of the venerable 'dialog' program"
+arch=('any')
+# mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64')
+url="https://help.gnome.org/users/zenity/stable"
+license=('BSD')
+provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext"
+         "${MINGW_PACKAGE_PREFIX}-doxygen"
+         "${MINGW_PACKAGE_PREFIX}-gtk4"
+         "${MINGW_PACKAGE_PREFIX}-itstool"
+         "${MINGW_PACKAGE_PREFIX}-libadwaita"
+         "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext"
+             "${MINGW_PACKAGE_PREFIX}-doxygen"
+             "${MINGW_PACKAGE_PREFIX}-meson"
+             "${MINGW_PACKAGE_PREFIX}-gtk4"
+             "${MINGW_PACKAGE_PREFIX}-itstool"
+             "${MINGW_PACKAGE_PREFIX}-libadwaita"
+             "${MINGW_PACKAGE_PREFIX}-help2man"
+             "git")
+# _commit=52bbd4365ab5febdbb73220c4e6ad9c9bf65231b
+# source=("${_realname}"::"git+https://github.com/lsq/zenity.git#commit=${_commit}"
+source=("${_realname}"::"git+https://github.com/lsq/zenity.git")
+sha256sums=('SKIP')
+MESON_BUILD_DIR="_build"
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  printf "%s" "$(git describe --abbrev=0)"
+}
+
+prepare() {
+  cd "${srcdir}"/${_realname}
+  git checkout windows
+  git rebase master windows
+  meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
+}
+
+build() {
+
+  cd "${srcdir}"/${_realname}
+  meson test -C "${MESON_BUILD_DIR}"
+}
+
+package() {
+  cd "${srcdir}"/${_realname}
+  ninja -C "${MESON_BUILD_DIR}" install
+}
