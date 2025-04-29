@@ -233,6 +233,13 @@ sort_array() {
     readarray -d '' sorted < <(printf '%s\0' "${!A[@]}" | sort -z)
 }
 
+check_pacman_dblock() {
+    while [[ -e /var/lib/pacman/db.lck ]]; do
+        echo -e "${d_colors[red]}another process is using pacman. \nwaiting for exit in 5 second.\n${d_colors[normal]}}"
+        sleep 5s
+    done
+}
+
 build_pacakges() {
     local updateinfo  index db_files
     local -a array_index
@@ -316,6 +323,7 @@ build_pacakge() {
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
+    check_pacman_dblock
     eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force "$install_flag"
 
     ls *.tar.zst
