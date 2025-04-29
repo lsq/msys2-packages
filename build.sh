@@ -263,11 +263,11 @@ build_pacakges() {
     for index in "${array_index[@]}"
     do
         eval "${updateinfos[$index]}"
-        if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
-            async "build_pacakge updateinfo" success error
-        else
+        # if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
+            # async "build_pacakge updateinfo" success error
+        # else
             build_pacakge updateinfo
-        fi
+        # fi
     done
     wait
     declare -p updated
@@ -323,7 +323,7 @@ build_pacakge() {
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
-    check_pacman_dblock
+    # check_pacman_dblock
     eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force "$install_flag"
 
     ls *.tar.zst
