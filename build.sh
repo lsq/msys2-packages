@@ -317,7 +317,8 @@ build_pacakge() {
     orig_files=(*)
     if [[ $oldver != $newver ]];then
        sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
-       git commit -a -m "update to version $newver."
+       updpkgsums
+       git commit -a -m "update to version $newver($oldver)."
    else
        echo "\* rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
     fi
