@@ -1,0 +1,50 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+_realname=tree
+# pkgbase=mingw-w64-${_realname}-git
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
+# pkgver=4.1.90
+pkgver=r20.3de59bf
+pkgrel=1
+pkgdesc="The GNOME port of the venerable 'tree' program"
+arch=('any')
+# mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64')
+url="https://github.com/lsq/tree"
+license=('GPL')
+provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+# depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext"
+#          "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "git")
+# _commit=52bbd4365ab5febdbb73220c4e6ad9c9bf65231b
+# source=("${_realname}"::"git+https://github.com/lsq/zenity.git#commit=${_commit}"
+source=("${_realname}"::"git+https://github.com/lsq/tree.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # printf "%s" "$(git describe --abbrev=0)"
+}
+
+prepare() {
+  cd "${srcdir}"/${_realname}
+  sed -i 's|\(prefix = \)/usr|\1${DESTDIR}|' Make_ming.mak
+  # git checkout windows
+  # git rebase master windows
+  # meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
+}
+
+build() {
+
+  cd "${srcdir}"/${_realname}
+  mingw32-make -f Make_ming.mak
+}
+
+package() {
+  cd "${srcdir}"/${_realname}
+
+  mingw32-make -f Make_ming.mak install DESTDIR="${pkgdir}/${MINGW_PREFIX}"
+}
