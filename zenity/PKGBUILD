@@ -45,12 +45,12 @@ prepare() {
   git config --list
   git checkout windows
   git rebase master windows
-  meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
 }
 
 build() {
 
   cd "${srcdir}"/${_realname}
+  meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
   meson test -C "${MESON_BUILD_DIR}"
 }
 
