@@ -524,12 +524,12 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # read_config
     # echo "${pkginfos[*]}"
     # echo "${check_version_list[*]}"
+    git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    git config --global user.name "github-actions[bot]"
     [[ -z "${option_build+true}" ]] && check_update
     [[ ! -z "${option_report+'true'}" ]] && report "Update information" "${updateinfos[@]}"
     # git config --local user.email "github-actions[bot]@users.noreply.github.com"
     # git config --local user.name "github-actions[bot]"
-    git config --global user.email "github-actions[bot]@users.noreply.github.com"
-    git config --global user.name "github-actions[bot]"
     [[ ! -z "${option_verbose+set}" ]] && declare -p pkginfos
     [[ ! -z "${option_verbose+set}" ]] && declare -p updateinfos
     # echo "jobsinfo=\"$(declare -p updateinfos|sed 's/\\/\\\\/g;s/"/\\"/g')\"" #>> $GITHUB_OUTPUT
