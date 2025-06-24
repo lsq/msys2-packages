@@ -57,7 +57,7 @@ jobs:
           sed -i 's|\(# SigLevel = Never\)|\1\n[mlsq]\nSigLevel = Optional\nServer = https://github.com/lsq/msys2-packages/releases/latest/download\n|' /etc/pacman.conf
           pacman -Syuu --noconfirm --overwrite '*'
           pacman -Syuu --noconfirm --overwrite '*'
-          bash  ./build.sh --report
+          bash -x ./build.sh --report
 
       - name: build
         if: ${{ steps.check_update.outputs.updateable == 1 }}

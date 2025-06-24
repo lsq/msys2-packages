@@ -42,6 +42,7 @@ pkgver() {
 
 prepare() {
   cd "${srcdir}"/${_realname}
+  git config --list
   git checkout windows
   git rebase master windows
   meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
