@@ -12,4 +12,4 @@
 |5|zenity|ucrt64|0|git|0|
 |6|python-jiter|ucrt64|0|tar|0|
 |7|tree|ucrt64|0|git|0|
-
+|8|fontforge|ucrt64|0|git|0|

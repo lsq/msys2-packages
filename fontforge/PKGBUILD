@@ -1,0 +1,99 @@
+# Maintainer: Biswapriyo Nath <nathbappai@gmail.com>
+
+_realname=fontforge
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
+# pkgver=20230101
+pkgver=r19672.387146a24
+pkgrel=1
+pkgdesc='Outline and bitmap font editor (mingw-w64)'
+arch=('any')
+mingw_arch=('ucrt64')
+url='https://fontforge.org/'
+msys2_repository_url="https://github.com/fontforge/fontforge"
+msys2_references=(
+  "cpe: cpe:/a:alexej_kryukov:fontforge"
+  "cpe: cpe:/a:fontforge:fontforge"
+)
+license=('spdx:GPL-3.0-or-later')
+depends=("${MINGW_PACKAGE_PREFIX}-freetype"
+         "${MINGW_PACKAGE_PREFIX}-gettext"
+         "${MINGW_PACKAGE_PREFIX}-giflib"
+         "${MINGW_PACKAGE_PREFIX}-glib2"
+         "${MINGW_PACKAGE_PREFIX}-gtk3"
+         "${MINGW_PACKAGE_PREFIX}-gtkmm3"
+         "${MINGW_PACKAGE_PREFIX}-libiconv"
+         "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
+         "${MINGW_PACKAGE_PREFIX}-libltdl"
+         "${MINGW_PACKAGE_PREFIX}-libpng"
+         "${MINGW_PACKAGE_PREFIX}-libspiro"
+         "${MINGW_PACKAGE_PREFIX}-libtiff"
+         "${MINGW_PACKAGE_PREFIX}-libuninameslist"
+         "${MINGW_PACKAGE_PREFIX}-libxml2"
+         "${MINGW_PACKAGE_PREFIX}-pango"
+         "${MINGW_PACKAGE_PREFIX}-potrace"
+         "${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-readline"
+         "${MINGW_PACKAGE_PREFIX}-woff2")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-python-sphinx")
+source=("${_realname}"::"git+https://github.com/fontforge/fontforge.git"
+        "fontforge-doc-no-warn-error.patch"
+        "001-no-distutils.patch")
+sha256sums=('SKIP'
+            'b87fa5a39d6948262d2dfb9b84c2462dc21de0bfb115cdd13e893c1b533d8f78'
+            '6b927436f256a2fed2515e0db344501c81204dab524232b154af26649a924ff6')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Np1 -i "${srcdir}/$_patch"
+  done
+}
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # printf "%s" "$(git describe --abbrev=0)"
+}
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  apply_patch_with_msg \
+    fontforge-doc-no-warn-error.patch \
+    001-no-distutils.patch #\
+    # 002-update-po-files.patch
+}
+
+build() {
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake.exe \
+    -G "Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    "${_extra_config[@]}" \
+    -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
+    -DENABLE_MAINTAINER_TOOLS=ON \
+    -DENABLE_FONTFORGE_EXTRAS=ON \
+    "../${_realname}"
+
+  ${MINGW_PREFIX}/bin/cmake.exe --build ./
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install ./
+
+  install -Dm644 "${srcdir}/${_realname}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
