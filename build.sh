@@ -125,7 +125,7 @@ download_url() {
     local zstdir="$2"
     local fileName="$3"
     [[ -z $fileName ]] && fileName=$(basename ${download_url})
-    curl --create-dirs --output-dir $zstdir -sL ${download_url} -o $fileName || die "$fileName downloading failed!"
+    eval "${CURL_CMD} --create-dirs --output-dir $zstdir  ${download_url} -o $fileName" || die "$fileName downloading failed!"
     echo "$fileName download successed."
 
 }
@@ -153,6 +153,8 @@ release_info(){
     local -n arr2=$2
     repo="$1"
 
+    # HTTP_RESPONSE=$(curl -sL -w %"h{ttp_code"} -o response.json "https://api.github.com/repos/be5invis/Iosevka/releases/latest")
+    # if [$HT"TP_RESPONSE" -ne 200 ]; then echo Error fetchin"g latest Iosevka release: HTTP $HTTP_RESPONSE"; cat response.json; exit 1; fi
     # https://unix.stackexchange.com/questions/177843/parse-one-field-from-an-json-array-into-bash-array
     # json=$(curl -s https://api.github.com/repos/$repo/releases/latest)
     # eval "$(jq -r '@sh "myarr=( \([.[].item2]))"' <<<"$json")"
@@ -161,7 +163,7 @@ release_info(){
     # IFS=$'\r\n' readarray -td '' arr2  < <(
     # readarray -td $'\r' arr2  < <(
    # echo "$json" | jq -j '.[] | (., "\u0000") '
-   curl -s --fail -k https://api.github.com/repos/$repo/releases/latest | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
+   eval "${CURL_CMD} https://api.github.com/repos/$repo/releases/latest" | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
    # curl -s --fail https://api.github.com/repos/$repo/releases/latest | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
 )
    # declare -p arr2
@@ -504,6 +506,7 @@ read_config() {
 if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     read_arguments "${@}"
     scriptdir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+    CURL_CMD="curl -fsSL --retry 5 --retry-all-errors"
     source "$scriptdir"/scripts/async.bash
     cp -rf "$scriptdir"/scripts/makepatch /usr/bin/makepatch
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
