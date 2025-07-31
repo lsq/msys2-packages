@@ -14,6 +14,7 @@ url="https://github.com/lsq/py-tree-sitter"
 license=(MIT)
 depends=(
   "${MINGW_PACKAGE_PREFIX}-python"
+  "${MINGW_PACKAGE_PREFIX}-tree-sitter"
 )
 makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-build"

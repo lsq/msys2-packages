@@ -17,8 +17,6 @@ conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 # depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext"
 #          "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
-             "${MINGW_PACKAGE_PREFIX}-grep"
-             "${MINGW_PACKAGE_PREFIX}-sed"
              "git")
 # _commit=52bbd4365ab5febdbb73220c4e6ad9c9bf65231b
 # source=("${_realname}"::"git+https://github.com/lsq/zenity.git#commit=${_commit}"
