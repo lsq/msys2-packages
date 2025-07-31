@@ -17,7 +17,6 @@ conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 # depends=("${MINGW_PACKAGE_PREFIX}-perl-Locale-Gettext"
 #          "${MINGW_PACKAGE_PREFIX}-gettext-runtime")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
-             "${MINGW_PACKAGE_PREFIX}-gawk"
              "${MINGW_PACKAGE_PREFIX}-grep"
              "${MINGW_PACKAGE_PREFIX}-sed"
              "git")

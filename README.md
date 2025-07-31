@@ -14,3 +14,5 @@
 |7|tree|ucrt64|0|git|0|
 |8|fontforge|ucrt64|0|git|0|
 |9|bbe|ucrt64|0|git|0|
+|10|python-tree-sitter|ucrt64|0|git|0|
+|11|python-tree-sitter-make|ucrt64|0|git|0|
