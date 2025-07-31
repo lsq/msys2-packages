@@ -53,6 +53,6 @@ package() {
   MSYS2_ARG_CONV_EXCL="--prefix=" \
     ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
     --destdir="$pkgdir" dist/*.whl
-  install -vDm644 -t "$pkgdir/${MINGW_PACKAGE_PREFIX}/share/licenses/$pkgname" LICENSE
+  install -vDm644 -t "$pkgdir${MINGW_PREFIX}/share/licenses/python-${_realname}" LICENSE
 }
 

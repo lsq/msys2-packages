@@ -29,19 +29,28 @@ pkgver() {
   # printf "%s" "$(git describe --abbrev=0)"
 }
 
-prepare() {
-  cd "${srcdir}"/${_realname}
-  ./configure
-}
+# prepare() {
+#   cd "${srcdir}"/${_realname}
+#   ./configure
+# }
 
 build() {
 
   cd "${srcdir}"/${_realname}
+  ./configure \
+      --build=${MINGW_CHOST} \
+      --host=${MINGW_CHOST} \
+      --prefix=${MINGW_PREFIX} \
+      --mandir=${MINGW_PREFIX}/share/man \
+      --infodir=${MINGW_PREFIX}/share/info \
+      --libdir=${MINGW_PREFIX}/lib
+
   make
 }
 
 package() {
   cd "${srcdir}"/${_realname}
 
-  make install PREFIX="${pkgdir}/${MINGW_PREFIX}"
+  make DESTDIR="${pkgdir}" install
+  [[ -f "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}" ]] && msg2 "exist ${pkgdir}/${MINGW_PREFIX}/bin/${_realname}"
 }
