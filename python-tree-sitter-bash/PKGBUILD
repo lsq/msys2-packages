@@ -4,7 +4,7 @@
 _realname=tree-sitter-bash
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=r55.bce9afc
+pkgver=r416.c522257
 pkgrel=1
 pkgdesc="Makefile grammar for tree-sitter"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
