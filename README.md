@@ -16,3 +16,4 @@
 |9|bbe|ucrt64|0|git|0|
 |10|python-tree-sitter|ucrt64|0|git|0|
 |11|python-tree-sitter-make|ucrt64|0|git|0|
+|12|python-tree-sitter-bash|ucrt64|0|git|0|

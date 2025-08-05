@@ -1,0 +1,58 @@
+# Maintainer: Justin Kromlinger <hashworks@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+
+_realname=tree-sitter-bash
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=r55.bce9afc
+pkgrel=1
+pkgdesc="Makefile grammar for tree-sitter"
+# mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64')
+arch=(any)
+url="https://github.com/lsq/tree-sitter-bash"
+license=(MIT)
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-python"
+  "${MINGW_PACKAGE_PREFIX}-tree-sitter"
+)
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-python-build"
+  "${MINGW_PACKAGE_PREFIX}-python-installer"
+  "${MINGW_PACKAGE_PREFIX}-python-maturin"
+  "${MINGW_PACKAGE_PREFIX}-python-wheel"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools-rust"
+  "${MINGW_PACKAGE_PREFIX}-python-pkgconfig"
+  "${MINGW_PACKAGE_PREFIX}-cc"
+  "git")
+checkdepends=(
+  # "${MINGW_PACKAGE_PREFIX}-python-dirty-equals"
+  "${MINGW_PACKAGE_PREFIX}-python-pytest"
+)
+# source=("$_realname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+source=("${_realname}"::"git+https://github.com/lsq/tree-sitter-bash.git")
+# sha256sums=('9933fbc28f3e9fb34b532f067f15c9ff8d16b724117896f746dcb75004bd0091')
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # printf "%s" "$(git describe --abbrev=0)"
+}
+
+build() {
+  cp -r "${_realname}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  msg2 "$PATH"
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+  find . -name "*.whl"
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="$pkgdir" dist/*.whl
+  install -vDm644 -t "$pkgdir${MINGW_PREFIX}/share/licenses/python-${_realname}" LICENSE
+}
+
