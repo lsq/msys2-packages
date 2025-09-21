@@ -106,7 +106,7 @@ git_log() {
     cd "$scriptdir" || exit 1
     local git_now=$(git log -1 --format=%h)
     [[ $git_old == $git_now ]] && echo "pushflag=0" >> $GITHUB_ENV && return 0
-    [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >> $GITHUB_ENV || { echo "pushflag=0" >> $GITHUB_ENV && return 0 }
+    [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >> $GITHUB_ENV || { echo "pushflag=0" >> $GITHUB_ENV && return 0; }
     # git log --format=%B -n 1 $(git log -1 --pretty=format:"%h") | cat -
     # git rev-list --max-count=1 --no-commit-header --format=%B <commit>
     # https://stackoverflow.com/questions/3357280/print-commit-message-of-a-given-commit-in-git
