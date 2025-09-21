@@ -123,7 +123,10 @@ git_log() {
     local log_plain=$(git log --pretty='format:* %s' $git_old..HEAD | sed \
     -e 's/^/* /g')
     echo "$log_md"
-    sed ':a;N;$!ba;s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
+    # https://unix.stackexchange.com/questions/182153/sed-read-whole-file-into-pattern-space-without-failing-on-single-line-input
+    # sed ':a;N;$!ba;s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
+    # sed ':a;$!{N;ba};s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
+    sed 'H;1h;$!d;x;s/\\\*/\n  - /g;' <<<"$log_md" > "$scriptdir"/gitlog.txt
     cat "$scriptdir/gitlog.txt"
 
 }
