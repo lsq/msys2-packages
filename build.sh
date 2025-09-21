@@ -106,7 +106,7 @@ git_log() {
     cd "$scriptdir" || exit 1
     local git_now=$(git log -1 --format=%h)
     [[ $git_old == $git_now ]] && echo "pushflag=0" >> $GITHUB_ENV && return 0
-    echo "pushflag=1" >> $GITHUB_ENV 
+    [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >> $GITHUB_ENV || { echo "pushflag=0" >> $GITHUB_ENV && return 0 }
     # git log --format=%B -n 1 $(git log -1 --pretty=format:"%h") | cat -
     # git rev-list --max-count=1 --no-commit-header --format=%B <commit>
     # https://stackoverflow.com/questions/3357280/print-commit-message-of-a-given-commit-in-git
@@ -153,8 +153,8 @@ release_info(){
     local -n arr2=$2
     repo="$1"
 
-    # HTTP_RESPONSE=$(curl -sL -w %"h{ttp_code"} -o response.json "https://api.github.com/repos/be5invis/Iosevka/releases/latest")
-    # if [$HT"TP_RESPONSE" -ne 200 ]; then echo Error fetchin"g latest Iosevka release: HTTP $HTTP_RESPONSE"; cat response.json; exit 1; fi
+    # HTTP_RESPONSE=$(curl -sL -w "%h{ttp_code}" -o response.json "https://api.github.com/repos/be5invis/Iosevka/releases/latest")
+    # if [ "$HTTP_RESPONSE" -ne 200 ]; then echo Error fetchin"g latest Iosevka release: HTTP $HTTP_RESPONSE"; cat response.json; exit 1; fi
     # https://unix.stackexchange.com/questions/177843/parse-one-field-from-an-json-array-into-bash-array
     # json=$(curl -s https://api.github.com/repos/$repo/releases/latest)
     # eval "$(jq -r '@sh "myarr=( \([.[].item2]))"' <<<"$json")"

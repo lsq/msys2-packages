@@ -54,6 +54,8 @@ jobs:
         id: check_update
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          HTTP_RESPONSE=$(curl -sSL --connect-timeout 5 --max-time 10 --retry 3 -w "%{http_code}" -o /dev/null "https://github.com/lsq/msys2-packages/releases/download/latest/mlsq.db")
+          [ "$HTTP_RESPONSE" -eq 200 ] && 
           sed -i 's|\(# SigLevel = Never\)|\1\n[mlsq]\nSigLevel = Optional\nServer = https://github.com/lsq/msys2-packages/releases/latest/download\n|' /etc/pacman.conf
           pacman -Syuu --noconfirm --overwrite '*'
           pacman -Syuu --noconfirm --overwrite '*'
@@ -102,7 +104,7 @@ jobs:
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
-        if: ${{ steps.check_update.outputs.updateable == 1 }}
+        if: ${{ steps.check_update.outputs.updateable == 1 && env.pushflag == 1 }}
         with:
           files: |
             files/*.pkg.tar.zst
