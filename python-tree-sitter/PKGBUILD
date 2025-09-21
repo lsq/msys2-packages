@@ -10,7 +10,7 @@ pkgdesc="Python bindings to the Tree-sitter parsing library"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 mingw_arch=('ucrt64')
 arch=(any)
-url="https://github.com/lsq/py-tree-sitter"
+url="https://github.com/tree-sitter/py-tree-sitter"
 license=(MIT)
 depends=(
   "${MINGW_PACKAGE_PREFIX}-python"
@@ -31,7 +31,7 @@ checkdepends=(
   "${MINGW_PACKAGE_PREFIX}-python-pytest"
 )
 # source=("$_realname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-source=("${_realname}"::"git+https://github.com/lsq/py-tree-sitter.git")
+source=("${_realname}"::"git+$url.git")
 # sha256sums=('9933fbc28f3e9fb34b532f067f15c9ff8d16b724117896f746dcb75004bd0091')
 sha256sums=('SKIP')
 

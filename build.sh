@@ -104,6 +104,11 @@ git_log() {
     local git_old=$1
     
     cd "$scriptdir" || exit 1
+    if ! git diff-index --cached --quiet HEAD; then
+        git status
+        [ -f "${scriptdir}/gitlog.txt" ] && git commit -F "${scriptdir}/gitlog.txt"
+    fi
+
     local git_now=$(git log -1 --format=%h)
     [[ $git_old == $git_now ]] && echo "pushflag=0" >> $GITHUB_ENV && return 0
     [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >> $GITHUB_ENV || { echo "pushflag=0" >> $GITHUB_ENV && return 0; }
@@ -117,7 +122,7 @@ git_log() {
     -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#")
     local log_plain=$(git log --pretty='format:* %s' $git_old..HEAD | sed \
     -e 's/^/* /g')
-    echo "$log_md" | sed -e ':a;N;$!ba;s/\n/\\n/g' > "$scriptdir"/gitlog.txt
+    echo "$log_md" | sed -e ':a;N;$!ba;s/\*/\n\*/g;/s/\n/\\n/g' > "$scriptdir"/gitlog.txt
 
 }
 download_url() {
@@ -242,7 +247,7 @@ check_pacman_dblock() {
     done
 }
 
-build_pacakges() {
+build_packages() {
     local updateinfo  index db_files
     local -a array_index
     local gitoldver
@@ -266,9 +271,9 @@ build_pacakges() {
     do
         eval "${updateinfos[$index]}"
         # if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
-            # async "build_pacakge updateinfo" success error
+            # async "build_package updateinfo" success error
         # else
-            build_pacakge updateinfo
+            build_package updateinfo
         # fi
     done
     wait
@@ -288,7 +293,7 @@ build_pacakges() {
 # 2. old version number 
 # 3. new version number 
 # 4. make type: msys2/mingw
-build_pacakge() {
+build_package() {
     local -n pacakge_info="${1}"
     local make_option f str
     local pacakge oldver newver cur_files orig_files make_type
@@ -316,13 +321,17 @@ build_pacakge() {
 
     pwd
     cd "$scriptdir"/"$package" || exit 1
+    pwd
     orig_files=(*)
     if [[ $oldver != $newver ]];then
        sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
        updpkgsums
-       git commit -a -m "update to version $newver($oldver)."
+       git status
+       git add PKGBUILD
+       # git commit -a -m "${package} update to version $newver($oldver)."
+       echo "$package update to version $newver($oldver)" >> "$scriptdir/gitlog.txt"
    else
-       echo "\* rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
+       echo "rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
@@ -547,7 +556,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # download_release lsq/vim-mingw64-installer "$scriptdir"/files
     # download_release lsq/vime "$scriptdir"/files
     # https://www.geeksforgeeks.org/bash-scripting-how-to-check-if-variable-is-set/
-    [[ ! -z "${option_build+'true'}" ]] && build_pacakges
+    [[ ! -z "${option_build+'true'}" ]] && build_packages
     [[ ! -z "${option_report+'true'}" ]] && report "Updated packages" "${updated[@]}"
     [[ ! -z "${option_report+'true'}" ]] && report "Failed packages" "${failed[@]}"
     git status
