@@ -122,7 +122,9 @@ git_log() {
     -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#")
     local log_plain=$(git log --pretty='format:* %s' $git_old..HEAD | sed \
     -e 's/^/* /g')
-    echo "$log_md" | sed -e ':a;N;$!ba;s/\*/\n\*/g;/s/\n/\\n/g' > "$scriptdir"/gitlog.txt
+    echo "$log_md"
+    sed ':a;N;$!ba;s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
+    cat "$scriptdir/gitlog.txt"
 
 }
 download_url() {
@@ -267,6 +269,7 @@ build_packages() {
 
     sort_array updateinfos array_index 
     # for item in ${!updateinfos[@]}
+    echo "Update PKGBUILD:" > "$scriptdir/gitlog.txt"
     for index in "${array_index[@]}"
     do
         eval "${updateinfos[$index]}"
@@ -329,9 +332,9 @@ build_package() {
        git status
        git add PKGBUILD
        # git commit -a -m "${package} update to version $newver($oldver)."
-       echo "$package update to version $newver($oldver)" >> "$scriptdir/gitlog.txt"
+       echo "* $package update to version $newver($oldver)" >> "$scriptdir/gitlog.txt"
    else
-       echo "rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
+       echo "* rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
