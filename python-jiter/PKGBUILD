@@ -4,7 +4,7 @@
 _realname=jiter
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.11.0
+pkgver=0.11.1
 pkgrel=1
 pkgdesc="Fast iterable JSON parser"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -30,7 +30,7 @@ checkdepends=(
   "${MINGW_PACKAGE_PREFIX}-python-pytest"
 )
 source=("$_realname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('5eca503150d27de5d83946420f0bc35ed22b56740ad1c522b41b759137d9fe4d')
+sha256sums=('fd8659548511171c1f84fbbdcd30e8696a8e8c2f44283ff7024902e5100419d5')
 
 build() {
   cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
