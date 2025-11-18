@@ -26,8 +26,9 @@ source=("${_realname}-${pkgver}.tar.gz::${msys2_repository_url}/archive/refs/tag
 sha256sums=('709855106B5828F38764D3C59B02D7AA4F626216C1D82396769C839E0BF6932E')
 
 prepare() {
-  cd "${_realname}-${pkgver}"
+  cd "${_realname}-${pkgver}/pyrefly"
   export RUSTUP_TOOLCHAIN=nightly-x86_64-pc-windows-gnu
+  rustup set default-host x86_64-pc-windows-gnu
   rustup show
   rustup default nightly-x86_64-pc-windows-gnu
   rustup show
@@ -36,7 +37,7 @@ prepare() {
 }
 
 build() {
-  cd "${_realname}-${pkgver}"
+  cd "${_realname}-${pkgver}/pyrefly"
 
   export _PYTHON_HOST_PLATFORM=$(python -c "import sysconfig, sys; sys.stdout.write(sysconfig.get_platform())")
   export WINAPI_NO_BUNDLED_LIBRARIES=1
@@ -52,8 +53,8 @@ check() {
 }
 
 package_pyrefly() {
-  install -Dm755 "${_realname}-${pkgver}/target/release/pyrefly" "${pkgdir}${MINGW_PREFIX}/bin/pyrefly"
-  install -Dm644 "${_realname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+  install -Dm755 "${_realname}-${pkgver}/pyrefly/target/release/pyrefly" "${pkgdir}${MINGW_PREFIX}/bin/pyrefly"
+  install -Dm644 "${_realname}-${pkgver}/pyrefly/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
 
   # local _complete="${_realname}-${pkgver}/target/release/pyrefly generate-shell-completion"
   # $_complete bash | install -Dm644 /dev/stdin "${pkgdir}${MINGW_PREFIX}/share/bash-completion/completions/${_realname}"
@@ -67,7 +68,7 @@ package_python-pyrefly() {
 
   MSYS2_ARG_CONV_EXCL="--prefix=" \
     python -m installer --prefix=${MINGW_PREFIX} \
-    --destdir="${pkgdir}" "${_realname}-${pkgver}"/target/wheels/*.whl
+    --destdir="${pkgdir}" "${_realname}-${pkgver}"/pyrefly/target/wheels/*.whl
 
   # split pyrefly binary
   rm -rf "${pkgdir}${MINGW_PREFIX}/bin/"
