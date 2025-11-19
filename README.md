@@ -1,3 +1,4 @@
+[![check&build](https://github.com/lsq/msys2-packages/actions/workflows/build.yml/badge.svg)](https://github.com/lsq/msys2-packages/actions/workflows/build.yml)
 ### :rosette: Some msys2 package
 
 :bookmark_tabs: Current package list:
