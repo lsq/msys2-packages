@@ -2,7 +2,10 @@
 
 # set -eou pipefail
 
-usage() { tee <<done-usage
+CURL_CMD="curl -fsSL --retry 5 --retry-all-errors"
+
+usage() {
+    tee <<done-usage
 
     Update Package Version 2025.4.20
     Copyright (C) 2025 Renato Silva
@@ -16,7 +19,8 @@ usage() { tee <<done-usage
     --verbose         Enable verbose output
 
 done-usage
-exit 1; }
+    exit 1
+}
 
 read_arguments() {
     arguments=("${@}")
@@ -24,18 +28,18 @@ read_arguments() {
     indent="$(printf %3s)"
     for element in "${arguments[@]}"; do
         case "${element}" in
-            --build)       option_build='true'             ;;
-            --report)      option_report='true'            ;;
-            --verbose)     option_verbose='true'           ;;
-            -*)            usage                           ;;
-             *)            args+=("${element//\\/\/}")
+        --build) option_build='true' ;;
+        --report) option_report='true' ;;
+        --verbose) option_verbose='true' ;;
+        -*) usage ;;
+        *) args+=("${element//\\/\/}") ;;
         esac
     done
 }
 
 die() {
-     echo -e '\033[40;31m$1 !!!\033[0m' >&2
-     exit 1
+    echo -e '\033[40;31m$1 !!!\033[0m' >&2
+    exit 1
 }
 
 success() {
@@ -63,7 +67,7 @@ message() {
     printf "${arguments[@]}"
 }
 
-header(){
+header() {
     local title="${1}"
     printf "${d_colors[green]}::"
     printf "${d_colors[white]} %s" "${title}"
@@ -78,8 +82,7 @@ restore() {
     # ref=("${eval_name[@]}")
     local element
 
-    for element in ${!eval_name[@]}
-    do
+    for element in ${!eval_name[@]}; do
         ref["$element"]="${eval_name[$element]}"
     done
 }
@@ -99,10 +102,9 @@ report() {
     echo
 }
 
-
 git_log() {
     local git_old=$1
-    
+
     cd "$scriptdir" || exit 1
     if ! git diff-index --cached --quiet HEAD; then
         git status
@@ -110,23 +112,23 @@ git_log() {
     fi
 
     local git_now=$(git log -1 --format=%h)
-    [[ $git_old == $git_now ]] && echo "pushflag=0" >> $GITHUB_ENV && return 0
-    [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >> $GITHUB_ENV || { echo "pushflag=0" >> $GITHUB_ENV && return 0; }
+    [[ $git_old == $git_now ]] && echo "pushflag=0" >>$GITHUB_ENV && return 0
+    [[ -f "${scriptdir}/files/mlsq.db" ]] && echo "pushflag=1" >>$GITHUB_ENV || { echo "pushflag=0" >>$GITHUB_ENV && return 0; }
     # git log --format=%B -n 1 $(git log -1 --pretty=format:"%h") | cat -
     # git rev-list --max-count=1 --no-commit-header --format=%B <commit>
     # https://stackoverflow.com/questions/3357280/print-commit-message-of-a-given-commit-in-git
     local commiturl=https://github.com/lsq/msys2-packages/commit/
     local log_md=$(git log --pretty='format:%h %H %s' $git_old..HEAD | sed \
         -e 's/[][_*^<`\\]/\\&/g' \
-    -e "s#^\([0-9a-f]*\) \([0-9.a-z]*\)#* [\1]($commiturl\2)#" \
-    -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#")
+        -e "s#^\([0-9a-f]*\) \([0-9.a-z]*\)#* [\1]($commiturl\2)#" \
+        -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#")
     local log_plain=$(git log --pretty='format:* %s' $git_old..HEAD | sed \
-    -e 's/^/* /g')
+        -e 's/^/* /g')
     echo "$log_md"
     # https://unix.stackexchange.com/questions/182153/sed-read-whole-file-into-pattern-space-without-failing-on-single-line-input
     # sed ':a;N;$!ba;s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
     # sed ':a;$!{N;ba};s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
-    sed 'H;1h;$!d;x;s/\\\*/\n  - /g;' <<<"$log_md" > "$scriptdir"/gitlog.txt
+    sed 'H;1h;$!d;x;s/\\\*/\n  - /g;' <<<"$log_md" >"$scriptdir"/gitlog.txt
     cat "$scriptdir/gitlog.txt"
 
 }
@@ -149,8 +151,7 @@ download_release() {
     [ ! -d "$dirs" ] && mkdir -p "$dirs"
     release_info $repo release_infos
     declare -p release_infos
-    for url in ${release_infos[@]}
-    do
+    for url in ${release_infos[@]}; do
         download_url=${url//\"/}
         fileName=$(basename "${download_url}")
         async "download_url $download_url $dirs $fileName" success error
@@ -158,7 +159,7 @@ download_release() {
     wait
     ls "$dirs"/
 }
-release_info(){
+release_info() {
     local repo json
     local -n arr2=$2
     repo="$1"
@@ -168,15 +169,16 @@ release_info(){
     # https://unix.stackexchange.com/questions/177843/parse-one-field-from-an-json-array-into-bash-array
     # json=$(curl -s https://api.github.com/repos/$repo/releases/latest)
     # eval "$(jq -r '@sh "myarr=( \([.[].item2]))"' <<<"$json")"
-    { readarray -td '' arr2 ; } < <(
-    # { readarray -td '' arr2 && wait "$!"; } < <(
-    # IFS=$'\r\n' readarray -td '' arr2  < <(
-    # readarray -td $'\r' arr2  < <(
-   # echo "$json" | jq -j '.[] | (., "\u0000") '
-   eval "${CURL_CMD} https://api.github.com/repos/$repo/releases/latest" | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
-   # curl -s --fail https://api.github.com/repos/$repo/releases/latest | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
-)
-   # declare -p arr2
+    { readarray -td '' arr2; } < <(
+        # { readarray -td '' arr2 && wait "$!"; } < <(
+        # IFS=$'\r\n' readarray -td '' arr2  < <(
+        # readarray -td $'\r' arr2  < <(
+        # echo "$json" | jq -j '.[] | (., "\u0000") '
+        set -o pipefail
+        eval "${CURL_CMD} https://api.github.com/repos/$repo/releases/latest" | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
+        # curl -s --fail https://api.github.com/repos/$repo/releases/latest | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
+    )
+    # declare -p arr2
 
 }
 
@@ -192,12 +194,12 @@ parse_job_output() {
     eval "$packages_info"
     # eval "$eval_str"
 
-    # for item in "${!updateinfos[@]}" 
+    # for item in "${!updateinfos[@]}"
     # do
     # done
 
 }
-check_old_exist(){
+check_old_exist() {
     local pkg_name oldver zstfile
     local -n flag=$3
 
@@ -205,8 +207,8 @@ check_old_exist(){
     oldver="$2"
 
     # zstfile=($(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f " ))
-    readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0" )
-    test -z "$zstfile" &&  echo -e "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 && return 0
+    readarray -td '' zstfile < <(find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$pkg_name.*$oldver.*.tar.zst" -printf "%f\0")
+    test -z "$zstfile" && echo -e "${d_colors[green]}$pkg_name${d_colors[normal]} not in releases files" && flag=1 && return 0
     flag=0
 }
 
@@ -220,22 +222,22 @@ build_dependency_check() {
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
     case "$make_type" in
-        unix)
-            make_option=
-            makepkg=makepkg
-            ;;
-        mingw*|ucrt*|clangd*)
-            make_option="MINGW_ARCH=$make_type"
-            makepkg="makepkg-mingw"
-            ;;
+    unix)
+        make_option=
+        makepkg=makepkg
+        ;;
+    mingw* | ucrt* | clangd*)
+        make_option="MINGW_ARCH=$make_type"
+        makepkg="makepkg-mingw"
+        ;;
     esac
 
     pwd
     cd "$scriptdir"/"$pacakge" || exit 1
 
     [[ $oldver != $newver ]] && sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
-    # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
-    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --clean --cleanbuild --force --syncdeps --noprepare --nobuild --noextract 
+    # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}"
+    eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --clean --cleanbuild --force --syncdeps --noprepare --nobuild --noextract
     [[ -d src ]] && rm -rf src
 }
 
@@ -253,7 +255,7 @@ check_pacman_dblock() {
 }
 
 build_packages() {
-    local updateinfo  index db_files
+    local updateinfo index db_files
     local -a array_index
     local gitoldver
 
@@ -270,16 +272,15 @@ build_packages() {
     # done
     #
 
-    sort_array updateinfos array_index 
+    sort_array updateinfos array_index
     # for item in ${!updateinfos[@]}
-    echo "Update PKGBUILD:" > "$scriptdir/gitlog.txt"
-    for index in "${array_index[@]}"
-    do
+    echo "Update PKGBUILD:" >"$scriptdir/gitlog.txt"
+    for index in "${array_index[@]}"; do
         eval "${updateinfos[$index]}"
         # if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
-            # async "build_package updateinfo" success error
+        # async "build_package updateinfo" success error
         # else
-            build_package updateinfo
+        build_package updateinfo
         # fi
     done
     wait
@@ -288,7 +289,7 @@ build_packages() {
     ls
     local zstd_files=(*pkg.tar.zst)
     db_files=(mlsq*)
-    if [ -e "${zstd_files[0]}" ];then
+    if [ -e "${zstd_files[0]}" ]; then
         test -n "$db_files" && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
     fi
@@ -296,8 +297,8 @@ build_packages() {
 }
 # 需要参数:
 # 1. pacakge name
-# 2. old version number 
-# 3. new version number 
+# 2. old version number
+# 3. new version number
 # 4. make type: msys2/mingw
 build_package() {
     local -n pacakge_info="${1}"
@@ -311,17 +312,17 @@ build_package() {
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
     case "$make_type" in
-        unix)
-            make_option=
-            makepkg=makepkg
-            ;;
-        mingw*|ucrt*|clangd*)
-            make_option="MINGW_ARCH=$make_type"
-            makepkg="makepkg-mingw"
-            ;;
+    unix)
+        make_option=
+        makepkg=makepkg
+        ;;
+    mingw* | ucrt* | clangd*)
+        make_option="MINGW_ARCH=$make_type"
+        makepkg="makepkg-mingw"
+        ;;
     esac
 
-    if [[ "${pacakge_info[pkg_as_dependency]}" == 1 ]];then
+    if [[ "${pacakge_info[pkg_as_dependency]}" == 1 ]]; then
         install_flag="-i"
     fi
 
@@ -329,17 +330,17 @@ build_package() {
     cd "$scriptdir"/"$package" || exit 1
     pwd
     orig_files=(*)
-    if [[ $oldver != $newver ]];then
-       sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
-       updpkgsums
-       git status
-       git add PKGBUILD
-       # git commit -a -m "${package} update to version $newver($oldver)."
-       echo "* $package update to version $newver($oldver)" >> "$scriptdir/gitlog.txt"
-   else
-       echo "* rebuild $package version $oldver" >> "$scriptdir/gitlog.txt"
+    if [[ $oldver != $newver ]]; then
+        sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
+        updpkgsums
+        git status
+        git add PKGBUILD
+        # git commit -a -m "${package} update to version $newver($oldver)."
+        echo "* $package update to version $newver($oldver)" >>"$scriptdir/gitlog.txt"
+    else
+        echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
     fi
-    # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}" 
+    # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}"
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
     # check_pacman_dblock
     eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --syncdeps --clean --cleanbuild --force "$install_flag"
@@ -359,10 +360,10 @@ build_package() {
     fi
     if [[ $oldver != $newver ]]; then
         # if printf "%s\0"  "${release_files[@]}"| grep -xqz -- ".*${pacakge}.*${oldver}.*.tar.zst";then
-            # echo ".*${pacakge}.*${oldver}.*.tar.zst"
+        # echo ".*${pacakge}.*${oldver}.*.tar.zst"
         # fi
         # https://unix.stackexchange.com/questions/577309/find-regular-expression-in-name
-        find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$package.*$newver.*.tar.zst" -printf "%f\n" 
+        find "$scriptdir/files" . -regextype posix-extended -regex ".*/[^/]*$package.*$newver.*.tar.zst" -printf "%f\n"
     fi
     remove_new_file orig_files
 }
@@ -393,10 +394,10 @@ tar_check() {
     newver=
     if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
         newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
-    elif [[ "${pkg_build_force}" == "1" ]];then
+    elif [[ "${pkg_build_force}" == "1" ]]; then
         newver="$oldver"
     fi
-    if [[ -n "$newver" || "$first_build" == "1" || $release_exist == "1" ]];then
+    if [[ -n "$newver" || "$first_build" == "1" || $release_exist == "1" ]]; then
         updateable=1
         [[ -z "$newver" ]] && newver=$oldver
 
@@ -405,7 +406,7 @@ tar_check() {
         updateinfos["${info[pkg_build_order]}"]="$str"
     fi
     remove_new_file ofiles
-        # cd ..
+    # cd ..
     # printf "%s\n" "$update_info"
 }
 git_check() {
@@ -444,10 +445,9 @@ remove_new_file() {
     local cur_files f
     local -n orig_list=$1
     cur_files=(*)
-    for f in "${cur_files[@]}"
-    do
+    for f in "${cur_files[@]}"; do
         # if [[ "${orig_files[@]}" =~ "$f" ]];then
-        if [[ " ${orig_list[*]} " =~ " ${f} " ]];then
+        if [[ " ${orig_list[*]} " =~ " ${f} " ]]; then
             continue
         fi
         echo "now remove $f"
@@ -465,33 +465,32 @@ check_update() {
     download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     # release_info "$GITHUB_REPOSITORY" release_infos
     # declare -p release_infos
-    if [[ ${#release_infos[@]} == 0 ]];then
+    if [[ ${#release_infos[@]} == 0 ]]; then
         first_build_tag=1
     else
         first_build_tag=0
     fi
-    for item in "${!pkginfos[@]}"
-    do
+    for item in "${!pkginfos[@]}"; do
         eval "${pkginfos[$item]}"
         echo "[1;34m::[$item][1;37m Checking ["${pkginfo[pkg_name]}"] updates [0m"
         # declare -p pkginfo
         if [[ "${pkginfo[pkg_source_type]}" =~ tar ]]; then
             tar_check pkginfo first_build_tag
 
-        elif [[ "${pkginfo[pkg_source_type]}" =~ git ]];then
+        elif [[ "${pkginfo[pkg_source_type]}" =~ git ]]; then
             git_check pkginfo first_build_tag
         fi
     done
 
-    [ "$updateable" == 1  ] && echo "updateable=1" 
-    echo "updateable=${updateable}" >> "$GITHUB_OUTPUT"
-    echo "jobsinfo=packages_info=\"$(declare -p updateinfos|sed 's/\\/\\\\/g;s/"/\\"/g')\"" >> $GITHUB_OUTPUT
+    [ "$updateable" == 1 ] && echo "updateable=1"
+    echo "updateable=${updateable}" >>"$GITHUB_OUTPUT"
+    echo "jobsinfo=packages_info=\"$(declare -p updateinfos | sed 's/\\/\\\\/g;s/"/\\"/g')\"" >>$GITHUB_OUTPUT
 }
 parse_config() {
     local pkg_config="${1//|/ }"
     local pkg_build_order pkg_name pkg_install_type pkg_build_force pkg_source_type pkg_as_dependency
     local -A pkginfo
-    IFS=" " read -r pkg_build_order pkg_name pkg_install_type pkg_build_force pkg_source_type pkg_as_dependency <<< "$pkg_config"
+    IFS=" " read -r pkg_build_order pkg_name pkg_install_type pkg_build_force pkg_source_type pkg_as_dependency <<<"$pkg_config"
     pkginfo[pkg_build_order]="${pkg_build_order}"
     pkginfo[pkg_name]="${pkg_name}"
     pkginfo[pkg_install_type]="${pkg_install_type}"
@@ -512,8 +511,7 @@ read_config() {
     local contents
 
     contents="$(sed -n '/|:--/{:c;$b e;N;s/\s*\(|.*|\)$/\1/;t c;s/\(.*\)\n.*/\1/;:e;s/[^\n]*\n//;p}' "$scriptdir"/README.md)"
-    while read -r line
-    do
+    while read -r line; do
         parse_config "$line"
     done <<<"$contents"
 }
@@ -521,7 +519,6 @@ read_config() {
 if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     read_arguments "${@}"
     scriptdir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
-    CURL_CMD="curl -fsSL --retry 5 --retry-all-errors"
     source "$scriptdir"/scripts/async.bash
     cp -rf "$scriptdir"/scripts/makepatch /usr/bin/makepatch
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
