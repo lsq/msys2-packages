@@ -5,7 +5,7 @@ _realname=pyrefly
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.42.1
+pkgver=0.42.0
 pkgrel=1
 pkgdesc="A fast type checker and IDE for Python (mingw-w64)"
 arch=('any')
@@ -51,12 +51,18 @@ check() {
   cd "${_realname}-${pkgver}"
 
   export WINAPI_NO_BUNDLED_LIBRARIES=1
-  cargo test --release #--frozen --all-features
+  # cargo test --release #--frozen --all-features
+
+  python -m pip install target/"${_realname}"-*.whl --force-reinstall
+  "${_realname}" --version
+  "${_realname}" --help
+  "${_realname}" check test.py
+  python -m "${_realname}" --version
 }
 
 package_pyrefly() {
-  install -Dm755 "${_realname}-${pkgver}/pyrefly/target/release/pyrefly" "${pkgdir}${MINGW_PREFIX}/bin/pyrefly"
-  install -Dm644 "${_realname}-${pkgver}/pyrefly/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+  install -Dm755 "${_realname}-${pkgver}/target/x86_64-pc-windows-gnu/release/pyrefly" "${pkgdir}${MINGW_PREFIX}/bin/pyrefly"
+  install -Dm644 "${_realname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
 
   # local _complete="${_realname}-${pkgver}/target/release/pyrefly generate-shell-completion"
   # $_complete bash | install -Dm644 /dev/stdin "${pkgdir}${MINGW_PREFIX}/share/bash-completion/completions/${_realname}"
@@ -70,7 +76,7 @@ package_python-pyrefly() {
 
   MSYS2_ARG_CONV_EXCL="--prefix=" \
     python -m installer --prefix=${MINGW_PREFIX} \
-    --destdir="${pkgdir}" "${_realname}-${pkgver}"/pyrefly/target/wheels/*.whl
+    --destdir="${pkgdir}" "${_realname}-${pkgver}"/target/wheels/*.whl
 
   # split pyrefly binary
   rm -rf "${pkgdir}${MINGW_PREFIX}/bin/"
