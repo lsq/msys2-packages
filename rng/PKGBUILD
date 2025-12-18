@@ -13,6 +13,8 @@ arch=(i686 x86_64)
 makedepends=(
   gcc
   git
+  zlib
+  zlib-devel
 )
 # install="${_realname}.install"
 # _commit="b5fcc0f3100a20bbb15602c99f4297dbe16ddad9"
@@ -47,5 +49,7 @@ build() {
 
 package() {
   cd "${srcdir}/${_realname}"
-  make DESTDIR="${pkgdir}" install
+  install -D "$_realname" ${pkgdir}/usr/bin/${_realname}
+  install -d ${pkgdir}/usr/share/man/man1
+  cp "man/${_realname}.1.gz" "${pkgdir}/usr/share/man/man1/"
 }

@@ -11,7 +11,6 @@ on:
       - .github/workflows/build.yml
       - build.sh
 
-    
 jobs:
   check_update:
     runs-on: windows-latest
@@ -21,7 +20,8 @@ jobs:
     strategy:
       matrix:
         include: [
-          { msystem: ucrt64, toolchain: ucrt-x86_64 }
+          # { msystem: ucrt64, toolchain: ucrt-x86_64 }
+          { msystem: MSYS }
           #,
           #{ msystem: mingw64, toolchain: x86_64 },
           #{ msystem: mingw32, toolchain: i686 }
@@ -41,9 +41,8 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
-          install: mingw-w64-${{ matrix.toolchain }}-toolchain base-devel binutils git
+          install: base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
           pacboy: >-
-            aria2:p
             ca-certificates
           update: true
           path-type: inherit
@@ -55,7 +54,7 @@ jobs:
         run: |
           cd -- "$(cygpath -ua '${{ github.workspace }}')"
           HTTP_RESPONSE=$(curl -sSL --connect-timeout 5 --max-time 10 --retry 3 -w "%{http_code}" -o /dev/null "https://github.com/lsq/msys2-packages/releases/download/latest/mlsq.db")
-          [ "$HTTP_RESPONSE" -eq 200 ] && 
+          [ "$HTTP_RESPONSE" -eq 200 ] &&
           sed -i 's|\(# SigLevel = Never\)|\1\n[mlsq]\nSigLevel = Optional\nServer = https://github.com/lsq/msys2-packages/releases/latest/download\n|' /etc/pacman.conf
           pacman -Syuu --noconfirm --overwrite '*'
           pacman -Syuu --noconfirm --overwrite '*'

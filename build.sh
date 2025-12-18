@@ -333,10 +333,6 @@ build_package() {
     if [[ $oldver != $newver ]]; then
         sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
         updpkgsums
-        git status
-        git add PKGBUILD
-        # git commit -a -m "${package} update to version $newver($oldver)."
-        echo "* $package update to version $newver($oldver)" >>"$scriptdir/gitlog.txt"
     else
         echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
     fi
@@ -353,6 +349,10 @@ build_package() {
     if [ -f "${buildTars[0]}" ]; then
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built successed."
         updated["${package}"]="$str"
+        git status
+        git add PKGBUILD
+        # git commit -a -m "${package} update to version $newver($oldver)."
+        echo "* $package update to version $newver($oldver)" >>"$scriptdir/gitlog.txt"
         cp -rf *.tar.zst ../files
     else
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built failed."
@@ -411,7 +411,7 @@ tar_check() {
 }
 git_check() {
     local -n info="$1"
-    local oldver newver str release_exist
+    local oldver newver str release_exist oldrel newrel
     local -a ofiles
     local pkg_name="${info[pkg_name]}"
     local pkg_install_type="${info[pkg_install_type]}"
@@ -424,6 +424,7 @@ git_check() {
     ofiles=(*)
     source PKGBUILD
     oldver="$pkgver"
+    # oldrel="$pkgrel"
     check_old_exist "$pkg_name" "$oldver" release_exist
     makepkg -od
     local srcdir="src"

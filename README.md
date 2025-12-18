@@ -20,3 +20,4 @@
 |12|python-tree-sitter-bash|ucrt64|0|git|0|
 |13|pyrefly|ucrt64|0|tar|0|
 |14|rng|unix|0|git|0|
+|15|desed|ucrt64|0|git|0|
