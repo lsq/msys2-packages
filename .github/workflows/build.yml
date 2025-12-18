@@ -10,6 +10,8 @@ on:
       - README.md
       - .github/workflows/build.yml
       - build.sh
+      - '**/PKGBUILD'
+      - '**/*.patch'
 
 jobs:
   check_update:

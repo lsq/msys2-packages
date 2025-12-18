@@ -49,7 +49,7 @@ package() {
     --offline \
     --no-track \
     --frozen \
-    --path . \
+    --path app \
     --root "${pkgdir}${MINGW_PREFIX}"
 
   install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"

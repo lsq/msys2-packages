@@ -56,8 +56,11 @@ apply_patch_with_msg() {
 
 pkgver() {
   cd "${srcdir}/${_realname}"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
   # printf "%s" "$(git describe --abbrev=0)"
+    latest_version_published=$(git tag | tail -1 | sed 's/^v//')
+    latest_commit_hash=$(git log -1 --format="%h")
+    echo "$latest_version_published.$latest_commit_hash"
 }
 
 prepare() {
