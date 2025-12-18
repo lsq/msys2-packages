@@ -21,3 +21,5 @@
 |13|pyrefly|ucrt64|0|tar|0|
 |14|rng|unix|0|git|0|
 |15|desed|ucrt64|0|git|0|
+|16|dring|ucrt64|0|git|0|
+|17|bdiff|ucrt64|0|git|0|
