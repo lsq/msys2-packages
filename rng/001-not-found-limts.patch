@@ -1,0 +1,12 @@
+diff -aurN -x '\.git' a/include/common.h b/include/common.h
+--- a/include/common.h
++++ b/include/common.h
+@@ -16,7 +16,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
+-#ifdef __APPLE__
++#if defined(__APPLE__) || defined(_WIN32) || defined(__CYGWIN__)
+ #include <limits.h>
+ #else
+ #include <linux/limits.h>
