@@ -3,7 +3,7 @@
 _realname='rng'
 pkgname="${_realname}"
 # pkgver=r66.110a48b
-pkgver=1.0.4.b5fcc0f
+pkgver=1.0.4.20284b3
 pkgrel=1
 pkgdesc='Print range of lines to stdout.'
 url='https://github.com/nickolasburr/rng'
@@ -24,8 +24,7 @@ source=("rng::git+https://github.com/nickolasburr/rng"
         '001-not-found-limts.patch'
         )
 sha256sums=('SKIP'
-        '00759636cf5ac69c32a0d1571c7c513c9005379a87eb4314b75913b73b0322b8'
-)
+            '00759636cf5ac69c32a0d1571c7c513c9005379a87eb4314b75913b73b0322b8')
 
 pkgver() {
   cd "${srcdir}/${_realname}"
