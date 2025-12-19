@@ -20,7 +20,7 @@ sha256sums=('SKIP')
 pkgver() {
     cd "${srcdir}/${_realname}"
 
-    latest_version_published=$(git for-each-ref --sort=taggerdate --format '%(refname:strip=2)' refs/tags | tail -1 | sed 's/^v//')
+    latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
     latest_commit_hash=$(git log -1 --format="%h")
     echo "$latest_version_published.$latest_commit_hash"
 }
