@@ -23,3 +23,4 @@
 |15|desed|ucrt64|0|git|0|
 |16|dring|ucrt64|0|git|0|
 |17|bdiff|ucrt64|0|git|0|
+|18|python-tree-sitter-python|ucrt64|0|git|0|
