@@ -4,7 +4,7 @@
 _realname=tree-sitter-make
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=r55.bce9afc
+pkgver=1.1.1.5e9e8f8
 pkgrel=1
 pkgdesc="Makefile grammar for tree-sitter"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -36,7 +36,7 @@ source=("${_realname}"::"git+$url.git"
         )
 # sha256sums=('9933fbc28f3e9fb34b532f067f15c9ff8d16b724117896f746dcb75004bd0091')
 sha256sums=('SKIP'
-        'SKIP')
+            'b04c34f009be7d9206ab848eb86bc3eb34b91684320bc6d43c040cd81b5dbe00')
 
 pkgver() {
   cd "${srcdir}/${_realname}"
