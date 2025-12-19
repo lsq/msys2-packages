@@ -4,7 +4,7 @@
 _realname=termux-language-server
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.1.1.73911c9
+pkgver=0.0.31.a9d3b85
 pkgrel=1
 pkgdesc="🛠️ A language server for some specific bash scripts "
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
