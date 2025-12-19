@@ -4,7 +4,7 @@
 _realname=tree-sitter-c
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.20.8.ae19b67
+pkgver=0.24.1.ae19b67
 pkgrel=1
 pkgdesc="C grammar for tree-sitter"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')

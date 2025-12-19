@@ -3,7 +3,7 @@
 _realname=desed
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.2.1.2ffdc90
+pkgver=1.2.2.2ffdc90
 pkgrel=1
 pkgdesc="Debugger for Sed: demystify and debug your sed scripts, from comfort of your terminal."
 arch=('any')
