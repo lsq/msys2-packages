@@ -1,0 +1,18 @@
+diff -aurN -x '\.git' a/setup.py b/setup.py
+--- a/setup.py
++++ b/setup.py
+@@ -1,4 +1,5 @@
+ from os import path
++import sysconfig
+ from platform import system
+ 
+ from setuptools import Extension, find_packages, setup
+@@ -13,7 +14,7 @@ sources = [
+ if path.exists("src/scanner.c"):
+     sources.append("src/scanner.c")
+ 
+-if system() != "Windows":
++if system() != "Windows" or (system() == "Windows" and sysconfig.get_platform().startswith("mingw")):
+     cflags = ["-std=c11", "-fvisibility=hidden"]
+ else:
+     cflags = ["/std:c11", "/utf-8"]

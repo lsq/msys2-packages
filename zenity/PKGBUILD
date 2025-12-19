@@ -9,7 +9,7 @@ pkgdesc="The GNOME port of the venerable 'dialog' program"
 arch=('any')
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 mingw_arch=('ucrt64')
-url="https://help.gnome.org/users/zenity/stable"
+url="https://github.com/GNOME/zenity"
 license=('BSD')
 provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
@@ -30,15 +30,19 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "git")
 # _commit=52bbd4365ab5febdbb73220c4e6ad9c9bf65231b
 # source=("${_realname}"::"git+https://github.com/lsq/zenity.git#commit=${_commit}"
-source=("${_realname}"::"git+https://github.com/lsq/zenity.git")
-sha256sums=('SKIP')
+# source=("${_realname}"::"git+https://github.com/lsq/zenity.git")
+source=("${_realname}"::"git+$url.git"
+        "001-mingw-setup.patch"
+        )
+sha256sums=('SKIP'
+        'SKIP')
 MESON_BUILD_DIR="_build"
 
 pkgver() {
   cd "${srcdir}/${_realname}"
   # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
   # printf "%s" "$(git describe --abbrev=0)"
-    latest_version_published=$(git tag | tail -1 | sed 's/^v//')
+    latest_version_published=$(git tag --sort=committerdate | tail -1 | sed 's/^v//')
     latest_commit_hash=$(git log -1 --format="%h")
     echo "$latest_version_published.$latest_commit_hash"
 }
