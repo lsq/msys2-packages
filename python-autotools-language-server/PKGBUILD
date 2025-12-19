@@ -6,11 +6,11 @@ pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 pkgver=0.1.1.73911c9
 pkgrel=1
-pkgdesc="A library to create language servers."
+pkgdesc=""🛠️ Autotools language server, support configure.ac, Makefile.am, Makefile. 
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 mingw_arch=('ucrt64')
 arch=(any)
-url="https://github.com/neomutt/lsp-tree-sitter"
+url="https://github.com/Freed-Wu/autotools-language-server"
 license=(MIT)
 depends=(
   "${MINGW_PACKAGE_PREFIX}-python"
@@ -57,6 +57,7 @@ build() {
   msg2 "$PATH"
   ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
   find . -name "*.whl"
+  ls -R dist/* || echo "nothing!"
 }
 
 package() {
