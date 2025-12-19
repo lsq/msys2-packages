@@ -24,3 +24,6 @@
 |16|dring|ucrt64|0|git|0|
 |17|bdiff|ucrt64|0|git|0|
 |18|python-tree-sitter-python|ucrt64|0|git|0|
+|19|python-tree-sitter-c|ucrt64|0|git|0|
+|20|python-lsp-tree-sitter|ucrt64|0|git|0|
+|21|python-autotools-language-server|ucrt64|0|git|0|
