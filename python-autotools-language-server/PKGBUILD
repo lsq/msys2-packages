@@ -55,7 +55,8 @@ prepare() {
 build() {
   cp -r "${_realname}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
   msg2 "$PATH"
-  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+  # ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+  ${MINGW_PREFIX}/bin/pyproject-build
   find . -name "*.whl"
   ls -R dist/* || echo "nothing!"
 }
