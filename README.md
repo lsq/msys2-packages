@@ -27,3 +27,5 @@
 |19|python-tree-sitter-c|ucrt64|0|git|0|
 |20|python-lsp-tree-sitter|ucrt64|0|git|0|
 |21|python-autotools-language-server|ucrt64|0|git|0|
+|22|python-fqdn|ucrt64|0|git|1|
+|23|python-termux-language-server|ucrt64|0|git|0|
