@@ -4,7 +4,7 @@
 _realname=tree-sitter-c
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=1.1.1.5e9e8f8
+pkgver=0.24.1.ae19b67
 pkgrel=1
 pkgdesc="C grammar for tree-sitter"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -36,7 +36,7 @@ source=("${_realname}"::"git+$url.git"
         )
 # sha256sums=('9933fbc28f3e9fb34b532f067f15c9ff8d16b724117896f746dcb75004bd0091')
 sha256sums=('SKIP'
-            'SKIP')
+            '0314167731e7a8e1f396a823afac13a502281bb8b17cc238ae2fae903db63160')
 
 pkgver() {
   cd "${srcdir}/${_realname}"
