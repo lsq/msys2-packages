@@ -3,22 +3,24 @@
 
 _realname=libiconv
 pkgbase=mingw-w64-${_realname}
-pkgname=(${MINGW_PACKAGE_PREFIX}-${_realname})
+pkgname=(${MINGW_PACKAGE_PREFIX}-${_realname} ${MINGW_PACKAGE_PREFIX}-iconv)
 pkgdesc='Character encoding conversion library and utility (mingw-w64)'
 pkgver=1.18.ea352dbc
 pkgrel=1
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://www.gnu.org/software/libiconv/'
-surl='https://github.com/lsq/libiconv.git'
+# surl='https://github.com/lsq/libiconv.git'
+surl='git://git.savannah.gnu.org/libiconv.git'
 # surl='/c/Users/Administrator/github/libiconv'
 license=('spdx:GPL-3.0-or-later')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools"
              "${MINGW_PACKAGE_PREFIX}-gettext-tools"
+             "groff"
              "${MINGW_PACKAGE_PREFIX}-gperf")
 # source=("https://ftp.gnu.org/pub/gnu/${_realname}/${_realname}-${pkgver}.tar.gz"{,.sig}
-source=("$_realname"::"git+file://${surl}#branch=release"
+source=("$_realname"::"git+${surl}"
         0003-add-cp65001-as-utf8-alias.patch
         0002-fix-cr-for-awk-in-configure.all.patch
         fix-pointer-buf.patch
@@ -57,6 +59,9 @@ pkgver() {
 prepare() {
   cd "${srcdir}/${_realname}"
 
+
+  msg2 "运行 ./autopull.sh ..."
+  ./autopull.sh
     # 0002-fix-cr-for-awk-in-configure.all.patch \
   apply_patch_with_msg \
     fix-pointer-buf.patch \
