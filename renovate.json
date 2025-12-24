@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "dependencyDashboard": true,
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "automerge": true
+    }
+  ],
+  "npm": {
+    "enabled": true
+  },
+  "github-actions": {
+    "enabled": true
+  },
+  "automergeStrategy": "squash"
+}
