@@ -1,0 +1,65 @@
+name: test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/test.yml
+      - scripts/test.sh
+
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      matrix:
+        include: [
+          # { msystem: ucrt64, toolchain: ucrt-x86_64 }
+          { msystem: MSYS }
+          #,
+          #{ msystem: mingw64, toolchain: x86_64 },
+          #{ msystem: mingw32, toolchain: i686 }
+          ]
+      fail-fast: false
+
+    # outputs:
+    #   updateable: ${{ steps.check_update.outputs.updateable}}
+    #   jobsinfo: ${{ steps.check_update.outputs.jobsinfo}}
+    steps:
+      -
+        name: Configure git
+        shell: cmd
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v6
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
+          pacboy: >-
+            ca-certificates
+          update: true
+          path-type: inherit
+          #location: C:\
+          release: false
+
+      - name: check update
+        id: check_update
+        run: |
+          cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          HTTP_RESPONSE=$(curl -sSL --connect-timeout 5 --max-time 10 --retry 3 -w "%{http_code}" -o /dev/null "https://github.com/lsq/msys2-packages/releases/download/latest/mlsq.db")
+          [ "$HTTP_RESPONSE" -eq 200 ] &&
+          sed -i 's|\(# SigLevel = Never\)|\1\n[mlsq]\nSigLevel = Optional\nServer = https://github.com/lsq/msys2-packages/releases/latest/download\n|' /etc/pacman.conf
+          pacman -Syuu --noconfirm --overwrite '*'
+          pacman -Syuu --noconfirm --overwrite '*'
+          bash -x ./scripts/test.sh
+        env:
+          MINGW_ARCH: ${{ matrix.msystem }}
+          PKGEXT: ".pkg.tar.zst"
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: 'test.zip'
+          path: '*.zip'
