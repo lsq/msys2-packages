@@ -5,7 +5,7 @@ _realname=libiconv
 pkgbase=mingw-w64-${_realname}
 pkgname=(${MINGW_PACKAGE_PREFIX}-${_realname} ${MINGW_PACKAGE_PREFIX}-iconv)
 pkgdesc='Character encoding conversion library and utility (mingw-w64)'
-pkgver=1.18.b66b2f5
+pkgver=1.18.a66b2f5
 pkgrel=1
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -17,6 +17,7 @@ license=('spdx:GPL-3.0-or-later')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools"
              "${MINGW_PACKAGE_PREFIX}-gettext-tools"
+             "${MINGW_PACKAGE_PREFIX}-iconv"
              "groff"
              "${MINGW_PACKAGE_PREFIX}-gperf")
 # source=("https://ftp.gnu.org/pub/gnu/${_realname}/${_realname}-${pkgver}.tar.gz"{,.sig}
@@ -67,7 +68,8 @@ prepare() {
     fix-pointer-buf.patch \
     0003-add-cp65001-as-utf8-alias.patch
 
-  sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      printf("icd is NULL\\n");\n      return -1;\n  }\n\1/;}' lib/iconv.c
+  # sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      printf("icd is NULL\\n");\n      return -1;\n  }\n\1/;}' lib/iconv.c
+  sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      return -1;\n  }\n\1/;}' lib/iconv.c
   regenerate_files
 
   sed -i 's/\(ac_cs_awk_cr=\x27\\\)\\\(r\x27\)/\1\2/' configure

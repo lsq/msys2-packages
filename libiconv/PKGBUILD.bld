@@ -67,7 +67,8 @@ prepare() {
     fix-pointer-buf.patch \
     0003-add-cp65001-as-utf8-alias.patch
 
-  sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      printf("icd is NULL\\n");\n      return -1;\n  }\n\1/;}' lib/iconv.c
+  # sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      printf("icd is NULL\\n");\n      return -1;\n  }\n\1/;}' lib/iconv.c
+  sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      return -1;\n  }\n\1/;}' lib/iconv.c
 
   regenerate_files
   sed -i 's/\(ac_cs_awk_cr=\x27\\\)\\\(r\x27\)/\1\2/' configure
