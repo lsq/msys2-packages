@@ -179,6 +179,10 @@ release_info() {
         # curl -s --fail https://api.github.com/repos/$repo/releases/latest | jq -j '.assets|map(.browser_download_url)| map(select(test(".*.tar.zst"))) |.[]| (., "\u0000") '
     )
     # declare -p arr2
+    if [ ${#arr2[@]} -eq 0 ]; then
+    echo "Warning: No URLs extracted – API call may have failed!" >&2
+    exit 1  # 如果你想在这里退出
+fi
 
 }
 
