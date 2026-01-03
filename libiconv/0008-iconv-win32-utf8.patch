@@ -1,0 +1,133 @@
+diff --git a/libcharset/lib/localcharset.c b/libcharset/lib/localcharset.c
+--- a/libcharset/lib/localcharset.c
++++ b/libcharset/lib/localcharset.c
+@@ -26,6 +26,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdlib.h>
++# define streq(a, b) (strcmp (a, b) == 0)
+ 
+ #if defined __APPLE__ && defined __MACH__ && HAVE_LANGINFO_CODESET
+ # define DARWIN7 /* Darwin 7 or newer, i.e. Mac OS X 10.3 or newer */
+diff --git a/src/Makefile.in b/src/Makefile.in
+--- a/src/Makefile.in
++++ b/src/Makefile.in
+@@ -118,6 +118,7 @@ install : all force
+ 	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a @LTLIBINTL@ $(DESTDIR)$(libdir)/libiconv.la $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
+ 	esac
+ 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv$(EXEEXT) $(DESTDIR)$(bindir)/iconv$(EXEEXT)
++	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv_no_i18n$(EXEEXT) $(DESTDIR)$(bindir)/iconv_no_i18n$(EXEEXT)
+ 
+ install-strip : force
+ 	case '$(INSTALL_PROGRAM)' in \
+diff --git a/src/iconv.c b/src/iconv.c
+--- a/src/iconv.c
++++ b/src/iconv.c
+@@ -84,6 +84,58 @@ error (int status, int errnum, const char *message, ...)
+ # define xalloc_die abort
+ #endif
+ 
++#ifdef __MINGW32__
++#include <windows.h>
++#define UNICODE
++#define _UNICODE
++// 声明 MinGW 内部函数（用于获取宽字符命令行）
++extern int __cdecl __wgetmainargs(
++    int* _Argc,
++    wchar_t*** _Argv,
++    wchar_t*** _Env,
++    int _DoWildCard,
++    int* _StartInfo
++);
++static char **g_utf8_argv = NULL;
++static int g_utf8_argc = 0;
++void init_utf8_argv(int *argc_ptr, char ***argv_ptr) {
++    int argc_w;
++    wchar_t **wargv;
++    wchar_t **wenv;
++    int si = 0;
++
++    // 获取原始宽字符参数
++    __wgetmainargs(&argc_w, &wargv, &wenv, 0, &si);
++
++    // 分配 UTF-8 argv
++    char **utf8_argv = (char **)malloc((argc_w + 1) * sizeof(char *));
++    for (int i = 0; i < argc_w; i++) {
++        int len = WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, NULL, 0, NULL, NULL);
++        utf8_argv[i] = (char *)malloc(len);
++        WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, utf8_argv[i], len, NULL, NULL);
++        /* printf("utf8_argv[%d]: %s\n", i, utf8_argv[i]); */
++    }
++    utf8_argv[argc_w] = NULL;
++
++    // 保存全局（便于 free）
++    g_utf8_argv = utf8_argv;
++    g_utf8_argc = argc_w;
++
++    // 更新输出参数
++    if (argc_ptr) *argc_ptr = argc_w;
++    if (argv_ptr) *argv_ptr = utf8_argv;
++}
++
++void free_utf8_argv(void) {
++    if (g_utf8_argv) {
++        for (int i = 0; i < g_utf8_argc; i++) {
++            free(g_utf8_argv[i]);
++        }
++        free(g_utf8_argv);
++        g_utf8_argv = NULL;
++    }
++}
++#endif
+ /* Locale independent test for a decimal digit.
+    Argument can be  'char' or 'unsigned char'.  (Whereas the argument of
+    <ctype.h> isdigit must be an 'unsigned char'.)  */
+@@ -847,6 +899,9 @@ static int convert (iconv_t cd, int infile, const char* infilename, _GL_UNUSED c
+ 
+ int main (int argc, char* argv[])
+ {
++#ifdef __MINGW32__
++  init_utf8_argv(&argc, &argv); // when using gdb debug, commit this line.
++#endif
+   const char* fromcode = NULL;
+   const char* tocode = NULL;
+   int do_list = 0;
+@@ -865,6 +920,9 @@ int main (int argc, char* argv[])
+   /* Needed for gettext. */
+   setlocale(LC_MESSAGES,"");
+ #endif
++#ifdef __MINGW32__
++  char *loc = setlocale(LC_ALL, ".utf8"); // printf("Locale encoding: %s\n", loc);
++#endif
+ #endif
+ #if ENABLE_NLS
+   bindtextdomain("libiconv",relocate(LOCALEDIR));
+@@ -936,6 +994,7 @@ int main (int argc, char* argv[])
+         i += 2;
+       } else {
+         ilseq_byte_subst = argv[i]+13;
++        //printf("ilseq_byte_subst: %s - %02x\n", ilseq_byte_subst, ilseq_byte_subst[0]);
+         i++;
+       }
+       ilseq_byte_subst_size =
+@@ -1147,5 +1206,8 @@ int main (int argc, char* argv[])
+           _("I/O error"));
+     status = 1;
+   }
++#ifdef __MINGW32__
++  free_utf8_argv();
++#endif
+   exit(status);
+ }
+diff --git a/tests/check-subst b/tests/check-subst
+--- a/tests/check-subst
++++ b/tests/check-subst
+@@ -1,7 +1,7 @@
+ #!/bin/sh
+ # Check of --unicode-subst, --byte-subst, --widechar-subst options.
+ set -e
+-iconv=../src/iconv_no_i18n
++iconv=../src/.libs/iconv_no_i18n
+ 
+ options_ascii='--unicode-subst=<U+%04X> --byte-subst=<0x%02x> --widechar-subst=<%08x>'
+ options_utf8='--unicode-subst=«U+%04X» --byte-subst=«0x%02x» --widechar-subst=«%08x»'
