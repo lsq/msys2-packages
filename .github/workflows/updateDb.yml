@@ -1,0 +1,119 @@
+name: update Release Assets DataBase
+
+on:
+  workflow_dispatch:  # 允许手动运行
+  # release:
+  #   types: [released, edited, deleted]  # 在发布或编辑 Release 时触发
+
+jobs:
+  update-and-reupload:
+    name: Download, update, and re-upload release assets
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: C:\msys64\usr\bin\bash.exe -l {0}
+    permissions:
+      contents: write  # 需要写权限来上传/删除 release assets
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - uses: robinraju/release-downloader@v1.12
+        with:
+          out-file-path: downloaded_assets
+          latest: true
+          fileName: '*'
+      # - name: Download release assets
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     RELEASE_ID=${{ github.event.release.id }}
+      #     ASSETS_URL="${{ github.event.release.assets_url }}"
+      #
+      #     mkdir -p ./downloaded_assets
+      #     cd ./downloaded_assets
+      #
+      #     # 获取所有 asset 信息
+      #     curl -s -H "Authorization: token $GITHUB_TOKEN" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          "$ASSETS_URL" | \
+      #     jq -r '.[] | "\(.id) \(.name)"' | \
+      #     while read asset_id asset_name; do
+      #       echo "Downloading $asset_name (ID: $asset_id)..."
+      #       curl -L -H "Authorization: token $GITHUB_TOKEN" \
+      #            -H "Accept: application/octet-stream" \
+      #            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id" \
+      #            -o "$asset_name"
+      #     done
+
+      - name: update pacman database on each asset
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          echo "pwd = $(pwd)"
+          pwd && ls
+          cd -- "$(cygpath -ua '${{ github.workspace }}')"
+          cd ./downloaded_assets
+          ls -R *
+          zstd_files=(*pkg.tar.zst)
+          db_files=(mlsq*)
+          if [ -e "${zstd_files[0]}" ]; then
+              test -n "$db_files" && rm -rf mlsq*
+              repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
+          fi
+          ls -R *
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            downloaded_assets/*.pkg.tar.zst
+            downloaded_assets/mlsq*
+      #      ./DeviceTree.zip
+      #    name: TWRP_Device_Tree-${{ github.run_id }}
+          name: latest
+      #    tag_name: ${{ github.run_id }}
+          tag_name: latest
+          body: update pacman database
+          # body_path: gitlog.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              # 如果 trim.sh 输出新文件（如 output_$file），请在此调整逻辑
+              # 例如：mv "output_$file" "$file"
+
+      # - name: Delete original assets from release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     RELEASE_ID=${{ github.event.release.id }}
+      #     curl -s -H "Authorization: token $GITHUB_TOKEN" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets" | \
+      #     jq -r '.[] | "\(.id)"' | \
+      #     while read asset_id; do
+      #       echo "Deleting asset ID: $asset_id"
+      #       curl -X DELETE \
+      #            -H "Authorization: token $GITHUB_TOKEN" \
+      #            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id"
+      #     done
+      #
+      # - name: Re-upload trimmed assets
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     RELEASE_ID=${{ github.event.release.id }}
+      #     UPLOAD_URL="${{ github.event.release.upload_url }}"
+      #     # Remove templated part { ... }
+      #     UPLOAD_URL="${UPLOAD_URL%\{*}"
+      #
+      #     cd ./downloaded_assets
+      #     for file in *; do
+      #       if [ -f "$file" ]; then
+      #         echo "Uploading $file..."
+      #         curl -X POST \
+      #              -H "Authorization: token $GITHUB_TOKEN" \
+      #              -H "Content-Type: application/octet-stream" \
+      #              --data-binary @"$file" \
+      #              "$UPLOAD_URL?name=$file"
+      #       fi
+      #     done
