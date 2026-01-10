@@ -430,7 +430,19 @@ git_check() {
     oldver="$pkgver"
     # oldrel="$pkgrel"
     check_old_exist "$pkg_name" "$oldver" release_exist
-    makepkg -od
+    make_type=${info[pkg_install_type]}
+    case "$make_type" in
+    unix)
+        make_option=
+        makepkg=makepkg
+        ;;
+    mingw* | ucrt* | clangd*)
+        make_option="MINGW_ARCH=$make_type"
+        makepkg="makepkg-mingw"
+        ;;
+    esac
+    eval "${make_option}" "$makepkg" --noprepare -od
+
     local srcdir="src"
     newver=$(pkgver)
 
