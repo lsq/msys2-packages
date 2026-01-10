@@ -2,8 +2,8 @@ name: update Release Assets DataBase
 
 on:
   workflow_dispatch:  # 允许手动运行
-  # release:
-  #   types: [released, edited, deleted]  # 在发布或编辑 Release 时触发
+  release:
+    types: [released, edited, deleted]  # 在发布或编辑 Release 时触发
 
 jobs:
   update-and-reupload:
