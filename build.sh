@@ -334,14 +334,14 @@ build_package() {
     cd "$scriptdir"/"$package" || exit 1
     pkgrel=$(sed -n 's/^pkgrel=\(.*\)/\1/p' PKGBUILD)
     updatecls="update to version"
-    [[ "$newver" == "$oldver" ]] && updatecls="rebuild" && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
     pwd
     orig_files=(*)
     if [[ $oldver != $newver ]]; then
         sed -i -e "s/\(^pkgver=\)$oldver/\1$newver/" -e 's/^\(pkgrel=\).*/\11/' PKGBUILD
         updpkgsums
     else
-        echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
+    #     echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
+        updatecls="rebuild" && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}"
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force

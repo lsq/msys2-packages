@@ -24,6 +24,7 @@ makedepends=(
 options=('!strip')
 source=("${_realname}-${pkgver}.tar.gz::${msys2_repository_url}/archive/refs/tags/${pkgver}.tar.gz")
 sha256sums=('96f6c63e7a15f753357def7fc93c2a0950879abc96b6dd40c4052e8304744a93')
+noextract=(${_realname}-${pkgver}.tar.gz)
 
 prepare() {
   bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz" 2>/dev/null || export MSYS=winsymlinks:lnk
