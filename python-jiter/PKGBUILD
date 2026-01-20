@@ -17,6 +17,7 @@ depends=(
 )
 makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-build"
+  "${MINGW_PACKAGE_PREFIX}-rustup"
   "${MINGW_PACKAGE_PREFIX}-python-installer"
   "${MINGW_PACKAGE_PREFIX}-python-maturin"
   "${MINGW_PACKAGE_PREFIX}-python-wheel"
@@ -32,11 +33,23 @@ checkdepends=(
 source=("$_realname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
 sha256sums=('cc579369476205f8081c2a9e1a23ae992abeecd8faf83662fc4850df07bcfe02')
 
-build() {
+prepare() {
   cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  export RUSTUP_TOOLCHAIN=stable-x86_64-pc-windows-gnu
+  rustup set default-host x86_64-pc-windows-gnu
+  rustup show
+  rustup default stable-x86_64-pc-windows-gnu
+  rustup show
+
+#"$(rustc -vV | sed -n 's/host: //p')"
+  cargo fetch  --config='net.git-fetch-with-cli=true' --target x86_64-pc-windows-gnu
+}
+
+build() {
+  cd "python-build-${MSYSTEM}"
   cd crates/jiter-python
   msg2 "$PATH"
-  export RUSTUP_TOOLCHAIN=stable
+  export _PYTHON_HOST_PLATFORM=$(python -c "import sysconfig, sys; sys.stdout.write(sysconfig.get_platform())")
   ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
