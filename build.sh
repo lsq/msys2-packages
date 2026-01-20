@@ -307,7 +307,7 @@ build_packages() {
 build_package() {
     local -n pacakge_info="${1}"
     local make_option f str
-    local pacakge oldver newver cur_files orig_files make_type
+    local pacakge oldver newver cur_files orig_files make_type pkgver updatecls
     local -A updated_info
     local -Ag updated failed
     local install_flag=''
@@ -316,14 +316,14 @@ build_package() {
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
     case "$make_type" in
-    unix)
-        make_option=
-        makepkg=makepkg
-        ;;
-    mingw* | ucrt* | clangd*)
-        make_option="MINGW_ARCH=$make_type"
-        makepkg="makepkg-mingw"
-        ;;
+        unix)
+            make_option=
+            makepkg=makepkg
+            ;;
+        mingw* | ucrt* | clangd*)
+            make_option="MINGW_ARCH=$make_type"
+            makepkg="makepkg-mingw"
+            ;;
     esac
 
     if [[ "${pacakge_info[pkg_as_dependency]}" == 1 ]]; then
@@ -332,10 +332,13 @@ build_package() {
 
     pwd
     cd "$scriptdir"/"$package" || exit 1
+    pkgrel=$(sed -n 's/^pkgrel=\(.*\)/\1/p' PKGBUILD)
+    updatecls="update to version"
+    [[ "$newver" == "$oldver" ]] && updatecls="rebuild" && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
     pwd
     orig_files=(*)
     if [[ $oldver != $newver ]]; then
-        sed -i "s/\(^pkgver=\)$oldver/\1$newver/" PKGBUILD
+        sed -i -e "s/\(^pkgver=\)$oldver/\1$newver/" -e 's/^\(pkgrel=\).*/\11/' PKGBUILD
         updpkgsums
     else
         echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
@@ -356,7 +359,7 @@ build_package() {
         git status
         git add PKGBUILD
         # git commit -a -m "${package} update to version $newver($oldver)."
-        echo "* $package update to version $newver($oldver)" >>"$scriptdir/gitlog.txt"
+        echo "* $package $updatecls $newver($oldver)" >>"$scriptdir/gitlog.txt"
         cp -rf *.tar.zst ../files
     else
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built failed."
