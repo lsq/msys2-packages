@@ -1,0 +1,12 @@
+3.13
+python-jiter
+python-tree-sitter
+python-tree-sitter-make
+python-tree-sitter-bash
+pyrefly
+python-tree-sitter-python
+python-tree-sitter-c
+python-lsp-tree-sitter
+python-autotools-language-server
+python-fqdn
+python-termux-language-server

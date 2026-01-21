@@ -536,12 +536,31 @@ read_config() {
     done <<<"$contents"
 }
 
+checkPythonVersion() {
+    local currVersion oldVersion line
+    [ ! -f /ucrt64/bin/python ] && pacboy sync python:u --noconfirm
+    currVersion=$(/ucrt64/bin/python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
+    oldVersion=$(sed -n '1p' $scriptdir/scripts/pythonfiles.txt)
+    echo -e "Current Version: ${currVersion}\nOld Version: ${oldVersion}"
+    if [[ $currVersion != $oldVersion ]]; then
+        while read line; do
+            [[ $line == $oldVersion ]] && continue
+            echo "replace python package ${line}"
+            sed -i 's#\(|'"$line"'|[^|]*|\)0#\11#' $scriptdir/README.md
+        done<"$scriptdir/scripts/pythonfiles.txt"
+        sed -i "1{s/${oldVersion}/${currVersion}/}" $scriptdir/scripts/pythonfiles.txt
+    fi
+    cat $scriptdir/README.md
+    cat $scriptdir/scripts/pythonfiles.txt
+    # exit 1
+}
 if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     read_arguments "${@}"
     scriptdir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
     source "$scriptdir"/scripts/async.bash
     cp -rf "$scriptdir"/scripts/makepatch /usr/bin/makepatch
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
+    checkPythonVersion
 
     declare -A pkginfos updateinfos
     declare -Ag d_colors
