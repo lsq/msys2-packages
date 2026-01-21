@@ -549,9 +549,12 @@ checkPythonVersion() {
             sed -i 's#\(|'"$line"'|[^|]*|\)0#\11#' $scriptdir/README.md
         done<"$scriptdir/scripts/pythonfiles.txt"
         sed -i "1{s/${oldVersion}/${currVersion}/}" $scriptdir/scripts/pythonfiles.txt
+        git status
+        git add $scriptdir/scripts/pythonfiles.txt
+        echo "* update python version from ${oldVersion} to ${currVersion}" >>"$scriptdir/gitlog.txt"
+        cat $scriptdir/README.md
+        cat $scriptdir/scripts/pythonfiles.txt
     fi
-    cat $scriptdir/README.md
-    cat $scriptdir/scripts/pythonfiles.txt
     # exit 1
 }
 if [[ "${BASH_SOURCE}" = "${0}" ]]; then
@@ -580,6 +583,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # echo "${check_version_list[*]}"
     git config --global user.email "github-actions[bot]@users.noreply.github.com"
     git config --global user.name "github-actions[bot]"
+    checkPythonVersion
     [[ -z "${option_build+true}" ]] && check_update
     [[ ! -z "${option_report+'true'}" ]] && report "Update information" "${updateinfos[@]}"
     # git config --local user.email "github-actions[bot]@users.noreply.github.com"
