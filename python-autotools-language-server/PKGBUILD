@@ -43,8 +43,9 @@ pkgver() {
   # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
   # printf "%s" "$(git describe --abbrev=0)"
     latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
-    latest_commit_hash=$(git log -1 --format="%h")
-    echo "$latest_version_published.$latest_commit_hash"
+    # latest_commit_hash=$(git log -1 --format="%h")
+    # echo "$latest_version_published.$latest_commit_hash"
+    printf "%s.r%s.%s" $latest_version_published $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
 }
 
 prepare() {
