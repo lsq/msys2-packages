@@ -3,7 +3,7 @@
 _realname=dring
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.0.4.26cb0b3
+pkgver=1.0.4.r29.26cb0b3
 pkgrel=1
 pkgdesc="Binary Diff Utility "
 arch=('any')
