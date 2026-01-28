@@ -248,7 +248,7 @@ build_dependency_check() {
 sort_array() {
     local -n A=$1
     local -n sorted=$2
-    readarray -d '' sorted < <(printf '%s\0' "${!A[@]}" | sort -z)
+    readarray -d '' sorted < <(printf '%s\0' "${!A[@]}" | sort -z -n)
 }
 
 check_pacman_dblock() {
@@ -278,8 +278,9 @@ build_packages() {
 
     sort_array updateinfos array_index
     # for item in ${!updateinfos[@]}
-    echo "Update PKGBUILD:" >"$scriptdir/gitlog.txt"
+    echo "Update PKGBUILD:" >>"$scriptdir/gitlog.txt"
     for index in "${array_index[@]}"; do
+        echo "Processing key:  $index"
         eval "${updateinfos[$index]}"
         # if [[ ${updateinfo[pkg_as_dependency]} == 0 ]]; then
         # async "build_package updateinfo" success error
@@ -287,7 +288,7 @@ build_packages() {
         build_package updateinfo
         # fi
     done
-    wait
+    # wait
     declare -p updated
     cd "$scriptdir"/files || exit 1
     ls
@@ -551,7 +552,7 @@ checkPythonVersion() {
         sed -i "1{s/${oldVersion}/${currVersion}/}" $scriptdir/scripts/pythonfiles.txt
         git status
         git add $scriptdir/scripts/pythonfiles.txt
-        echo "* update python version from ${oldVersion} to ${currVersion}" >>"$scriptdir/gitlog.txt"
+        echo "Update python version from ${oldVersion} to ${currVersion}" >>"$scriptdir/gitlog.txt"
         cat $scriptdir/README.md
         cat $scriptdir/scripts/pythonfiles.txt
     fi
@@ -563,7 +564,6 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     source "$scriptdir"/scripts/async.bash
     cp -rf "$scriptdir"/scripts/makepatch /usr/bin/makepatch
     cp -rf "$scriptdir"/scripts/updpkgver /usr/bin/updpkgver
-    checkPythonVersion
 
     declare -A pkginfos updateinfos
     declare -Ag d_colors
