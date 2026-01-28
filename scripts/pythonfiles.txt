@@ -1,4 +1,4 @@
-3.13
+3.14
 python-jiter
 python-tree-sitter
 python-tree-sitter-make
