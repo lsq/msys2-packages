@@ -457,7 +457,11 @@ git_check() {
         updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
         str=$(declare -p updateinfo)
         updateinfos["${info[pkg_build_order]}"]="$str"
-        [[ $newver != $oldver ]] && printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
+        if [[ $newver != $oldver ]]; then
+           printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
+       else
+           printf "[1;34m::[$pkg_name][1;37m rebuild version:$newver==$oldver\n [0m"
+        fi
     fi
     remove_new_file ofiles
 }
