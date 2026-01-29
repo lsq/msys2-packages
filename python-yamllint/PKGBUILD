@@ -1,0 +1,72 @@
+# Maintainer: Justin Kromlinger <hashworks@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+
+_realname=yamllint
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=0.3.2.r206.c28d871
+pkgrel=1
+pkgdesc="A linter for YAML files."
+# mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64')
+arch=(any)
+url="https://github.com/adrienverge/yamllint"
+license=(MIT)
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-python"
+  "${MINGW_PACKAGE_PREFIX}-python-types-pyyaml"
+  "${MINGW_PACKAGE_PREFIX}-python-pathspec"
+  "${MINGW_PACKAGE_PREFIX}-python-yaml"
+)
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-python-build"
+  "${MINGW_PACKAGE_PREFIX}-python-installer"
+  "${MINGW_PACKAGE_PREFIX}-python-maturin"
+  "${MINGW_PACKAGE_PREFIX}-python-wheel"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools-rust"
+  "${MINGW_PACKAGE_PREFIX}-python-pkgconfig"
+  "${MINGW_PACKAGE_PREFIX}-cc"
+  "git")
+checkdepends=(
+  # "${MINGW_PACKAGE_PREFIX}-python-dirty-equals"
+  "${MINGW_PACKAGE_PREFIX}-python-pytest"
+)
+# source=("$_realname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+source=("${_realname}"::"git+$url.git"
+        )
+# sha256sums=('9933fbc28f3e9fb34b532f067f15c9ff8d16b724117896f746dcb75004bd0091')
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # printf "%s" "$(git describe --abbrev=0)"
+    latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
+    # latest_commit_hash=$(git log -1 --format="%h")
+    # echo "$latest_version_published.$latest_commit_hash"
+    printf "%s.r%s.%s" $latest_version_published $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
+}
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  # patch -p1 -i "${srcdir}/001-mingw-setup.patch"
+}
+
+build() {
+  cp -r "${_realname}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  msg2 "$PATH"
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+  # ${MINGW_PREFIX}/bin/pyproject-build
+  find . -name "*.whl"
+  ls -R dist/* || echo "nothing!"
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="$pkgdir" dist/*.whl
+  install -vDm644 -t "$pkgdir${MINGW_PREFIX}/share/licenses/python-${_realname}" LICENSE
+}
+

@@ -31,3 +31,4 @@
 |23|python-termux-language-server|ucrt64|0|git|0|
 |24|python-ansicolor|ucrt64|0|git|1|
 |25|python-vim-vint|ucrt64|0|git|0|
+|26|python-yamllint|ucrt64|0|git|0|
