@@ -10,3 +10,6 @@ python-lsp-tree-sitter
 python-autotools-language-server
 python-fqdn
 python-termux-language-server
+python-ansicolor
+python-vim-vint
+python-yamllint
