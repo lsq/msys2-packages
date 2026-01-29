@@ -6,8 +6,8 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}-runtime"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-libtextstyle"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-tools")
-pkgver=0.26
-pkgrel=2
+pkgver=1.0
+pkgrel=1
 pkgdesc="GNU internationalization library (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -31,7 +31,7 @@ source=(https://ftp.gnu.org/pub/gnu/${_realname}/${_realname}-${pkgver}.tar.lz{,
         0024-disable-gnu-format.patch
         0030-fix-build-with-mingw-w64-clang.patch
         0101-fix-build-with-clang-21.patch)
-sha256sums=('a0151088dad8942374dc038e461b228352581defd7055e79297f156268b8d508'
+sha256sums=('d6342cbe1411a2fe7d139bfed80c2d63b1babc92acfedc72501cc105184f61ee'
             'SKIP'
             'cbc2f533012d646521afa20f8b256917fce040741ff42cf53fb6dd7123a6670a'
             'ec39103d851262c02c27b7038f3c538e03afaefc6aa050311d62519d192ff38c'
