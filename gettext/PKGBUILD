@@ -72,8 +72,8 @@ prepare() {
   apply_patch_with_msg \
     0030-fix-build-with-mingw-w64-clang.patch
 
-  apply_patch_with_msg \
-    0101-fix-build-with-clang-21.patch
+  # apply_patch_with_msg \
+  #   0101-fix-build-with-clang-21.patch
 
   sed -i 's/\(cygwin\*\)/\1 | msys\* | mingw\*/' gettext-runtime/m4/build-to-host.m4
 
