@@ -4,7 +4,7 @@
 _realname=ansicolor
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.3.2.r206.c28d871
+pkgver=0.3.3.r210.49c9d74
 pkgrel=1
 pkgdesc="A library to produce ansi color output and colored highlighting and diffing"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
