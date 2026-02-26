@@ -59,7 +59,7 @@ jobs:
           MINGW_ARCH: ${{ matrix.msystem }}
           PKGEXT: ".pkg.tar.zst"
       - name: Upload test artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: 'test.zip'
           path: '*.zip'
