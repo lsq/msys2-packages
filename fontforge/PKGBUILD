@@ -48,7 +48,7 @@ source=("${_realname}"::"git+https://github.com/fontforge/fontforge.git"
         # "002-update-po-files.patch"::https://github.com/fontforge/fontforge/commit/642d8a3db6d4bc0e70b429622fdf01ecb09c4c10.patch)
 sha256sums=('SKIP'
             'b87fa5a39d6948262d2dfb9b84c2462dc21de0bfb115cdd13e893c1b533d8f78'
-            '6b927436f256a2fed2515e0db344501c81204dab524232b154af26649a924ff6')
+            'cb7e55d3def9ec0e8368b2490dd7846f256aeb9e81939bc137851456d6e888ab')
             # 'ca4e15fca23c14851e74ad2a3551cf8426e46cf6b0c093aab43bea346a656236')
 
 apply_patch_with_msg() {
@@ -72,8 +72,8 @@ pkgver() {
 prepare() {
   cd "${srcdir}/${_realname}"
   apply_patch_with_msg \
-    fontforge-doc-no-warn-error.patch \
-    001-no-distutils.patch #\
+    fontforge-doc-no-warn-error.patch
+    # 001-no-distutils.patch #\
     # 002-update-po-files.patch
 }
 

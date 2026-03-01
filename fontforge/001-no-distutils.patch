@@ -1,7 +1,7 @@
 diff -urN fontforge-20230101/pyhook/CMakeLists.txt.orig fontforge-20230101/pyhook/CMakeLists.txt
 --- fontforge-20230101/pyhook/CMakeLists.txt.orig	2023-01-01 06:25:39.000000000 +0100
 +++ fontforge-20230101/pyhook/CMakeLists.txt	2024-11-04 18:45:57.371407500 +0100
-@@ -21,10 +21,22 @@
+@@ -36,10 +36,22 @@
 # So do it ourselves, getting the prefix-relative path instead
  if(NOT DEFINED PYHOOK_INSTALL_DIR)
    if(APPLE)
