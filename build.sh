@@ -376,11 +376,134 @@ build_package() {
     remove_new_file orig_files
 }
 
+# 函数：从当前目录的 PKGBUILD 中提取 pkgver 和 pkgrel，返回 pkgver-pkgrel
+# 主程序：调用函数并打印结果
+# if version=$(get_pkg_version); then
+#     echo "$version"
+# else
+#     exit 1
+# fi
+get_pkg_version() {
+    local pkgbuild="${1:-PKGBUILD}"
+    local fromFun="${2:-no}"
+    # 检查 PKGBUILD 是否存在
+    if [[ ! -f $pkgbuild ]]; then
+        echo "Error: PKGBUILD not found in current directory." >&2
+        return 1
+    fi
+
+    # 在子 shell 中 source PKGBUILD 并输出版本信息
+    (
+        # 禁用别名、重置 PATH 安全性（可选）
+        # set +o allexport
+        set +e +u +o pipefail 2>/dev/null || true
+        pkgver() { :; }
+ 
+        # source PKGBUILD
+        source $pkgbuild >/dev/null 2>&1 || { echo "Error: Failed to source PKGBUILD." >&2; exit 1; }
+
+        # 重新定义 pkgver 为原始版本（覆盖占位）
+        # eval "$(declare -f pkgver)"
+        if [[ $fromFun == "yes" ]]; then
+        if declare -f pkgver >/dev/null; then
+            pkgver=$(pkgver)
+            # export pkgver
+        fi
+        fi
+        # 检查变量是否存在
+        if [[ -z "${pkgver+x}" ]] || [[ -z "${pkgrel+x}" ]]; then
+            echo "Error: pkgver or pkgrel not defined in PKGBUILD." >&2
+            exit 1
+        fi
+
+        # 输出 pkgver-pkgrel（Arch 标准格式）
+        printf '%s-%s\n' "$pkgver" "$pkgrel"
+    )
+}
+
+get_pkg_version_mkg() {
+    if ! command -v makepkg >/dev/null 2>&1; then
+        echo "Error: 'makepkg' is required." >&2
+        exit 1
+    fi
+    if [[ ! -f PKGBUILD ]]; then
+        echo "Error: PKGBUILD not found." >&2
+        exit 1
+    fi
+
+    local srcinfo
+    # 当执行printsrcinfo时，正常的构建流程跳过，不会执行pkgver()函数
+    # https://deepwiki.com/search/pkgbuildpkgvermakepkg-printsrc_233056ee-080a-4d10-a55e-1df45c5e0229`
+    srcinfo=$(makepkg --printsrcinfo 2>/dev/null) || {
+        echo "Error: Failed to parse PKGBUILD with makepkg." >&2
+        exit 1
+    }
+
+    local pkgver pkgrel
+    pkgver=$(awk '/^[[:space:]]*pkgver[[:space:]]*=/ { print $3; exit }' <<< "$srcinfo")
+    pkgrel=$(awk '/^[[:space:]]*pkgrel[[:space:]]*=/ { print $3; exit }' <<< "$srcinfo")
+
+    if [[ -z "$pkgver" ]] || [[ -z "$pkgrel" ]]; then
+        echo "Error: pkgver or pkgrel missing." >&2
+        exit 1
+    fi
+
+    echo "${pkgver}-${pkgrel}"
+}
+
+# 从 PKGBUILD 中提取 pkgver() 函数体，不污染当前环境
+get_pkgver_func() {
+    local pkgbuild="${1:-PKGBUILD}"
+    if [[ ! -f "$pkgbuild" ]]; then
+        echo "Error: $pkgbuild not found." >&2
+        return 1
+    fi
+
+    # 在子 shell 中 source PKGBUILD 并提取 pkgver 函数体
+    (
+        # 禁用所有可能的副作用（如自动执行）
+        set +e +u +o pipefail 2>/dev/null || true
+
+        # 定义一个空的 pkgver 函数占位（防止 PKGBUILD 中调用它）
+        pkgver() { :; }
+
+        # source PKGBUILD（此时 pkgver() 已被重新定义）
+        source "$pkgbuild"
+
+        # 使用 declare -f 提取函数定义
+        declare -f pkgver
+    )
+}
+
+get_pkgver_from_func() {
+    local pkgbuild="${1:-PKGBUILD}"
+    local ver
+
+    # 在干净的子环境中执行 pkgver 并捕获输出
+    # ver=$(
+        (
+            set +e +u +o pipefail 2>/dev/null || true
+            # pkgver() { :; }
+            source "$pkgbuild" >/dev/null 2>&1
+            # 重新定义 pkgver 为原始版本（覆盖占位）
+            # eval "$(declare -f pkgver)"
+            if declare -f pkgver >/dev/null; then
+                pkgver=$(pkgver)
+                # export pkgver
+            fi
+            # 执行 pkgver 并输出结果
+            printf '%s-%s\n' "$pkgver" "$pkgrel"
+        )
+    # )
+    # printf '%s' "$ver"
+}
+
 tar_check() {
     local -n info="$1"
     local oldver newver str release_exist
     local pkg_name="${info[pkg_name]}"
     local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_source_type="${info[pkg_source_type]}"
     local pkg_build_force="${info[pkg_build_force]}"
     local -n first_build="$2"
     local -a ofiles
@@ -397,14 +520,17 @@ tar_check() {
     cd -
     updpkgver --no-build --versioned --color "${pkg_name}"
     cd "${scriptdir}/${pkg_name}" || exit 1
-    oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
+    # oldver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD)
+    oldver=$(get_pkg_version)
     check_old_exist "$pkg_name" "$oldver" release_exist
     newver=
     if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
-        newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
+        # newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
+        newver=$(get_pkg_version PKGBUILD.NEW no)
     elif [[ "${pkg_build_force}" == "1" ]]; then
         newver="$oldver"
     fi
+    check_old_exist "$pkg_name" "$newver" release_exist
     if [[ -n "$newver" || "$first_build" == "1" || $release_exist == "1" ]]; then
         updateable=1
         [[ -z "$newver" ]] && newver=$oldver
@@ -423,6 +549,7 @@ git_check() {
     local -a ofiles
     local pkg_name="${info[pkg_name]}"
     local pkg_install_type="${info[pkg_install_type]}"
+    local pkg_source_type="${info[pkg_source_type]}"
     local pkg_build_force="${info[pkg_build_force]}"
     local -n first_build="$2"
     local -A updateinfo
@@ -430,8 +557,12 @@ git_check() {
     cd "$scriptdir"/"$pkg_name" || exit 1
 
     ofiles=(*)
-    source PKGBUILD
-    oldver="$pkgver"
+    # source PKGBUILD
+    if oldver="$(get_pkg_version)"; then
+        printf "[1;34m::[$pkg_name][1;37m oldver: $oldver.\n [0m"
+    else
+        exit 1
+    fi
     # oldrel="$pkgrel"
     check_old_exist "$pkg_name" "$oldver" release_exist
     make_type=${info[pkg_install_type]}
@@ -448,7 +579,8 @@ git_check() {
     eval "${make_option}" "$makepkg" --noprepare -od
 
     local srcdir="src"
-    newver=$(pkgver)
+    newver=$(get_pkg_version PKGBUILD "yes")
+    check_old_exist "$pkg_name" "$newver" release_exist
 
     if [[ "$oldver" == "$newver" && "$pkg_build_force" == "0" && "$first_build" != "1" && $release_exist == "0" ]]; then
         printf "[1;34m::[$pkg_name][1;37m no updates detected.\n [0m"
