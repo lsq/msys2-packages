@@ -16,19 +16,19 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
 @@ -1,5 +1,6 @@
  #!/bin/bash
  
-+set -x
++# set -x
  usage() { tee <<done-usage
  
      Update Package Version 2016.6.24
-@@ -18,6 +19,7 @@
+@@ -18,6 +19,7 @@ usage() { tee <<done-usage
      --reset           Remove pending updates
      --status          List pending updates
      --versioned       Include versioned names in update
-+    --mingw-arch=TYPE Special mingw arch('ucrt64 mingw64 clangd64')
++    --mingw-arch=TYPE Special mingw arch('ucrt64 ming64 clangd64')
  
      --color           Force enabling colors
      --no-color        Force disabling colors
-@@ -48,11 +50,13 @@
+@@ -48,11 +50,13 @@ read_arguments() {
              --reset)       option_reset='true'             ;;
              --status)      option_status='true'            ;;
              --versioned)   option_versioned='true'         ;;
@@ -42,7 +42,7 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
      configure_colors
      option_bump
      option_commit
-@@ -187,7 +191,17 @@
+@@ -187,7 +191,17 @@ bump_version() {
          current=$((current + 1))
          component="${zero:-${component}}"
          if test ${current} -eq ${component_level}; then
@@ -61,7 +61,7 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
              zero=0
          fi
          result="${result}${result:+.}${component}"
-@@ -296,6 +310,7 @@
+@@ -296,6 +310,7 @@ detect_version() {
      local directory="${1}"
      local name="${2}"
      local pkgver="${3}"
@@ -69,7 +69,7 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
      local realname="${name#mingw-w64-}"
      [[ "${name}"     =~ .*-(git|hg|bzr|svn|cvs)$                      ]] && return 2
      [[ "${realname}" =~ .*[0-9].* && -z "${option_versioned}"         ]] && return 3
-@@ -407,7 +422,7 @@
+@@ -407,7 +422,7 @@ makepkg_command() {
      silent recipe_info "${recipe_name}" pkgname arch
      recipe_type type pkgname arch
      if [[ "${type}" = mingw ]]
@@ -78,7 +78,16 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
          else nameref_command='makepkg'
      fi
  }
-@@ -469,7 +484,7 @@
+@@ -416,7 +431,7 @@ make_package() {
+     local makepkg="${1}"
+     local recipe_name="${2}"
+     local options='--noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --clean --cleanbuild --force --log'
+-    ${makepkg} -p "${recipe_name}" ${options}
++    eval ${makepkg} -p "${recipe_name}" ${options}
+ }
+ 
+ build_filter() {
+@@ -469,7 +484,7 @@ build_updates() {
          restore package "${element}"
          if test -z "${option_verbose}"
              then build_update package
@@ -87,3 +96,14 @@ diff -aurN -x '\.git' 000/source/updpkgver/updpkgver.sh 001/source/updpkgver/upd
          fi
          if test -f "${package[recipe]}.NEW"
              then failed+=("${element}")
+@@ -507,8 +522,9 @@ commit_updates() {
+     silent git commit --file <(printf "${message}") "${files[@]}" || terminate 'failed committing updates'
+ }
+ 
++SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ pactoys_options='color.simple'
+-source pactoys || exit
++source $SCRIPT_DIR/pactoys || exit
+ 
+ import clearline
+ import colorize
