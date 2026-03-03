@@ -18,17 +18,26 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}
-    strategy:
-      matrix:
-        include: [
+        # shell: msys2 {0}
+        shell: C:\msys64\usr\bin\bash.exe -l {0}
+    env:
+      # 必须手动设置环境类型 (MSYS, MINGW64, 或 UCRT64)
+      # 否则很多工具（如 gcc）会找不到路径
+      MSYSTEM: MSYS
+      #MSYSTEM: MINGW64
+      # 强制让 MSYS2 继承 GitHub Action 的环境变量 (如 GITHUB_PATH)
+      CHERE_INVOKING: 1
+      MSYS2_PATH_TYPE: inherit
+    # strategy:
+    #   matrix:
+    #     include: [
           # { msystem: ucrt64, toolchain: ucrt-x86_64 }
-          { msystem: MSYS }
+          # { msystem: MSYS }
           #,
           #{ msystem: mingw64, toolchain: x86_64 },
           #{ msystem: mingw32, toolchain: i686 }
-          ]
-      fail-fast: false
+          # ]
+      # fail-fast: false
 
     # outputs:
     #   updateable: ${{ steps.check_update.outputs.updateable}}
@@ -40,16 +49,16 @@ jobs:
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v6
 
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          install: base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
-          pacboy: >-
-            ca-certificates
-          update: true
-          path-type: inherit
-          #location: C:\
-          release: false
+      # - uses: msys2/setup-msys2@v2
+      #   with:
+      #     msystem: ${{ matrix.msystem }}
+      #     install: base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
+      #     pacboy: >-
+      #       ca-certificates
+      #     update: true
+      #     path-type: inherit
+      #     #location: C:\
+      #     release: false
 
       - name: check update
         id: check_update
@@ -60,6 +69,7 @@ jobs:
           sed -i 's|\(# SigLevel = Never\)|\1\n[mlsq]\nSigLevel = Optional\nServer = https://github.com/lsq/msys2-packages/releases/latest/download\n|' /etc/pacman.conf
           pacman -Syuu --noconfirm --overwrite '*'
           pacman -Syuu --noconfirm --overwrite '*'
+          pacman -Sy --noconfirm base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
           bash ./build.sh --report
 
       - name: build
@@ -68,7 +78,7 @@ jobs:
         run: |
           bash ./build.sh --build --report
         env:
-          MINGW_ARCH: ${{ matrix.msystem }}
+          # MINGW_ARCH: ${{ matrix.msystem }}
           PKGEXT: ".pkg.tar.zst"
           updateable: ${{steps.check_update.outputs.updateable}}
           jobsinfo: ${{steps.check_update.outputs.jobsinfo}}
