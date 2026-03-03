@@ -1,0 +1,202 @@
+diff --git a/bindings/python/tests/test_binding.py b/bindings/python/tests/test_binding.py
+--- /dev/null
++++ b/bindings/python/tests/test_binding.py
+@@ -0,0 +1,11 @@
++from unittest import TestCase
++
++import tree_sitter, tree_sitter_make
++
++
++class TestLanguage(TestCase):
++    def test_can_load_grammar(self):
++        try:
++            tree_sitter.Language(tree_sitter_make.language())
++        except Exception:
++            self.fail("Error loading Make grammar")
+diff --git a/bindings/python/tree_sitter_make/__init__.py b/bindings/python/tree_sitter_make/__init__.py
+--- /dev/null
++++ b/bindings/python/tree_sitter_make/__init__.py
+@@ -0,0 +1,31 @@
++"""Makefile grammar for tree-sitter"""
++
++from importlib.resources import files as _files
++
++from ._binding import language
++
++
++def _get_query(name, file):
++    query = _files(f"{__package__}.queries") / file
++    globals()[name] = query.read_text()
++    return globals()[name]
++
++
++def __getattr__(name):
++    if name == "HIGHLIGHTS_QUERY":
++        return _get_query("HIGHLIGHTS_QUERY", "highlights.scm")
++
++    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
++
++
++__all__ = [
++    "language",
++    "HIGHLIGHTS_QUERY",
++]
++
++
++def __dir__():
++    return sorted(__all__ + [
++        "__all__", "__builtins__", "__cached__", "__doc__", "__file__",
++        "__loader__", "__name__", "__package__", "__path__", "__spec__",
++    ])
+diff --git a/bindings/python/tree_sitter_make/__init__.pyi b/bindings/python/tree_sitter_make/__init__.pyi
+--- /dev/null
++++ b/bindings/python/tree_sitter_make/__init__.pyi
+@@ -0,0 +1,5 @@
++from typing import Final
++
++HIGHLIGHTS_QUERY: Final[str]
++
++def language() -> object: ...
+diff --git a/bindings/python/tree_sitter_make/binding.c b/bindings/python/tree_sitter_make/binding.c
+--- /dev/null
++++ b/bindings/python/tree_sitter_make/binding.c
+@@ -0,0 +1,27 @@
++#include <Python.h>
++
++typedef struct TSLanguage TSLanguage;
++
++TSLanguage *tree_sitter_make(void);
++
++static PyObject* _binding_language(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(args)) {
++    return PyCapsule_New(tree_sitter_make(), "tree_sitter.Language", NULL);
++}
++
++static PyMethodDef methods[] = {
++    {"language", _binding_language, METH_NOARGS,
++     "Get the tree-sitter language for this grammar."},
++    {NULL, NULL, 0, NULL}
++};
++
++static struct PyModuleDef module = {
++    .m_base = PyModuleDef_HEAD_INIT,
++    .m_name = "_binding",
++    .m_doc = NULL,
++    .m_size = -1,
++    .m_methods = methods
++};
++
++PyMODINIT_FUNC PyInit__binding(void) {
++    return PyModule_Create(&module);
++}
+diff --git a/bindings/python/tree_sitter_make/py.typed b/bindings/python/tree_sitter_make/py.typed
+diff --git a/pyproject.toml b/pyproject.toml
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,29 @@
++[build-system]
++requires = ["setuptools>=42", "wheel"]
++build-backend = "setuptools.build_meta"
++
++[project]
++name = "tree-sitter-make"
++description = "Makefile grammar for tree-sitter"
++version = "1.1.1"
++keywords = ["incremental", "parsing", "tree-sitter", "make"]
++classifiers = [
++  "Intended Audience :: Developers",
++  "Topic :: Software Development :: Compilers",
++  "Topic :: Text Processing :: Linguistic",
++  "Typing :: Typed",
++]
++authors = [{ name = "Amaan Qureshi", email = "amaanq12@gmail.com" }]
++requires-python = ">=3.10"
++license.text = "MIT"
++readme = "README.md"
++
++[project.urls]
++Homepage = "https://github.com/tree-sitter-grammars/tree-sitter-make"
++
++[project.optional-dependencies]
++core = ["tree-sitter~=0.24"]
++
++[tool.cibuildwheel]
++build = "cp310-*"
++build-frontend = "build"
+diff --git a/setup.py b/setup.py
+--- /dev/null
++++ b/setup.py
+@@ -0,0 +1,74 @@
++from os import path
++import sysconfig
++from platform import system
++
++from setuptools import Extension, find_packages, setup
++from setuptools.command.build import build
++from setuptools.command.egg_info import egg_info
++from wheel.bdist_wheel import bdist_wheel
++
++sources = [
++    "bindings/python/tree_sitter_make/binding.c",
++    "src/parser.c",
++]
++if path.exists("src/scanner.c"):
++    sources.append("src/scanner.c")
++
++if system() != "Windows" or (system() == "Windows" and sysconfig.get_platform().startswith("mingw")):
++    cflags = ["-std=c11", "-fvisibility=hidden"]
++else:
++    cflags = ["/std:c11", "/utf-8"]
++
++
++class Build(build):
++    def run(self):
++        if path.isdir("queries"):
++            dest = path.join(self.build_lib, "tree_sitter_make", "queries")
++            self.copy_tree("queries", dest)
++        super().run()
++
++
++class BdistWheel(bdist_wheel):
++    def get_tag(self):
++        python, abi, platform = super().get_tag()
++        if python.startswith("cp"):
++            python, abi = "cp39", "abi3"
++        return python, abi, platform
++
++
++class EggInfo(egg_info):
++    def find_sources(self):
++        super().find_sources()
++        self.filelist.recursive_include("queries", "*.scm")
++        self.filelist.include("src/tree_sitter/*.h")
++
++
++setup(
++    packages=find_packages("bindings/python"),
++    package_dir={"": "bindings/python"},
++    package_data={
++        "tree_sitter_make": ["*.pyi", "py.typed"],
++        "tree_sitter_make.queries": ["*.scm"],
++    },
++    ext_package="tree_sitter_make",
++    ext_modules=[
++        Extension(
++            name="_binding",
++            sources=sources,
++            extra_compile_args=cflags,
++            define_macros=[
++                ("Py_LIMITED_API", "0x03090000"),
++                ("PY_SSIZE_T_CLEAN", None),
++                ("TREE_SITTER_HIDE_SYMBOLS", None),
++            ],
++            include_dirs=["src"],
++            py_limited_api=True,
++        )
++    ],
++    cmdclass={
++        "build": Build,
++        "bdist_wheel": BdistWheel,
++        "egg_info": EggInfo,
++    },
++    zip_safe=False
++)
