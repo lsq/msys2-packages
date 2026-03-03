@@ -338,11 +338,12 @@ build_package() {
     pwd
     orig_files=(*)
     if [[ $oldver != $newver ]]; then
-        sed -i -e "s/\(^pkgver=\)$oldver/\1$newver/" -e 's/^\(pkgrel=\).*/\11/' PKGBUILD
+        sed -i -e "s/\(^pkgver=\)${oldver%-*}/\1${newver%-*}/" -e 's/^\(pkgrel=\).*/\11/' PKGBUILD
         updpkgsums
     else
     #     echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
-        updatecls="rebuild" && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
+        updatecls="rebuild"
+        [[ ${pacakge_info[pkg_build_force]} == "1" ]] && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
     fi
     # updpkgver --makepkg="$make_option" --verbose --versioned "${pacakge}"
     # eval "${make_option}" "$makepkg" --noconfirm --skippgpcheck --nocheck --nodeps --clean --cleanbuild --force
@@ -535,7 +536,7 @@ tar_check() {
         updateable=1
         [[ -z "$newver" ]] && newver=$oldver
 
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}" [pkg_build_force]="${info[pkg_build_force]}")
         str=$(declare -p updateinfo)
         updateinfos["${info[pkg_build_order]}"]="$str"
     fi
@@ -586,7 +587,7 @@ git_check() {
         printf "[1;34m::[$pkg_name][1;37m no updates detected.\n [0m"
     else
         updateable=1
-        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}")
+        updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}" [pkg_build_force]="${info[pkg_build_force]}")
         str=$(declare -p updateinfo)
         updateinfos["${info[pkg_build_order]}"]="$str"
         if [[ $newver != $oldver ]]; then
