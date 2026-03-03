@@ -522,8 +522,9 @@ commit_updates() {
     silent git commit --file <(printf "${message}") "${files[@]}" || terminate 'failed committing updates'
 }
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 pactoys_options='color.simple'
-source pactoys || exit
+source $SCRIPT_DIR/pactoys || exit
 
 import clearline
 import colorize
