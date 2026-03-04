@@ -262,6 +262,7 @@ build_packages() {
     local updateinfo index db_files
     local -a array_index
     local gitoldver
+    uploadable=0
 
     gitoldver=$(git log -1 --format=%h)
     parse_job_output
@@ -297,6 +298,9 @@ build_packages() {
     if [ -e "${zstd_files[0]}" ]; then
         test -n "$db_files" && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
+
+        [ "$uploadable" == 1 ] && echo "uploadable=1"
+        echo "uploadable=${uploadable}" >>"$GITHUB_OUTPUT"
     fi
     git_log "$gitoldver"
 }
@@ -358,6 +362,7 @@ build_package() {
     if [ -f "${buildTars[0]}" ]; then
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built successed."
         updated["${package}"]="$str"
+        uploadable=1
         git status
         git add PKGBUILD
         # git commit -a -m "${package} update to version $newver($oldver)."

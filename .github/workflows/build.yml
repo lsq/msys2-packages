@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
-        if: ${{ steps.check_update.outputs.updateable == 1 && env.pushflag == 1 }}
+        if: ${{ steps.build.outputs.uploadable == 1 }}
         with:
           files: |
             files/*.pkg.tar.zst
