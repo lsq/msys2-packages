@@ -72,6 +72,7 @@ jobs:
           PKGEXT: ".pkg.tar.zst"
           updateable: ${{steps.check_update.outputs.updateable}}
           jobsinfo: ${{steps.check_update.outputs.jobsinfo}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Delete old release assets
       #   uses: mknejp/delete-release-assets@v1
