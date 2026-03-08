@@ -61,10 +61,25 @@ clearline() {
 }
 
 message() {
-    local arguments=("${@}")
+    # local arguments=("${@}")
     clearline
     printf "${indent}"
-    printf "${arguments[@]}"
+    printf "\e[1;36m%-20s %-15s %-15s %s\e[0m\n" "${@}" #"${arguments[@]}"
+}
+
+output_issue_info() {
+    message "${@}"
+    if [ ! -f issue.md ];then
+        local bjTime=$(echo "Beijing time: $(TZ='Asia/Shanghai' date)")
+        local run_job=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == "check&build") | .url, (.steps[] | select(.name == "build") | "#step:\(.number):1")' | tr -d "\n")
+        cat > issue.md <<EOF
+Action runner: [$GITHUB_WORKFLOW/$GITHUB_JOB/$GITHUB_RUN_NUMBER](https://github.com/lsq/msys2-packages/actions/runs/$GITHUB_RUN_ID) at [$bjTime]($run_job)
+|package name|old version|new version|install type|
+|:--:|:--:|:--:|:--:|
+EOF
+    fi
+
+    printf '|%s|%s|%s|%s|\n' "${@}" >> issue.md
 }
 
 header() {
@@ -88,8 +103,11 @@ restore() {
 }
 
 report() {
-    local title="${1}"
-    local elements=("${@:2}")
+    local action="${1}"
+    local title="${2}"
+    shift 2
+    # local elements=("${@:2}")
+    local elements=("${@}")
     local -A package
     test "${#elements[@]}" -gt 0 || return 0
     header "${title}"
@@ -97,9 +115,26 @@ report() {
         restore package "${element}"
         # declare -p package
         local arguments=("${package[pkg_name]}" "${package[oldver]}" ${package[newver]} "${package[pkg_install_type]}")
-        message "\e[1;36m%-20s %-15s %-15s %s\e[0m\n" "${arguments[@]}"
+        type "${action}" &>/dev/null
+
+    	local status=$?
+
+    	(( status != 0 )) && {
+    	    printf "\"%s\" is neither a function nor a recognized command\n" "${action}";
+	    # unset _c
+	    return 1;
+    	}
+
+        "$action" "${arguments[@]}"
     done
     echo
+    if [ -f issue.md ];then
+        echo "issueflag=1" >>$GITHUB_ENV
+        body_contents=$(cat issue.md)
+        echo "issueBody<<EOF" >> $GITHUB_OUTPUT
+        echo "$body_contents" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    fi
 }
 
 git_log() {
@@ -727,7 +762,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     git config --global user.name "github-actions[bot]"
     checkPythonVersion
     [[ -z "${option_build+true}" ]] && check_update
-    [[ ! -z "${option_report+'true'}" ]] && report "Update information" "${updateinfos[@]}"
+    [[ ! -z "${option_report+'true'}" ]] && report message "Update information" "${updateinfos[@]}"
     # git config --local user.email "github-actions[bot]@users.noreply.github.com"
     # git config --local user.name "github-actions[bot]"
     [[ ! -z "${option_verbose+set}" ]] && declare -p pkginfos
@@ -745,8 +780,8 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # download_release lsq/vime "$scriptdir"/files
     # https://www.geeksforgeeks.org/bash-scripting-how-to-check-if-variable-is-set/
     [[ ! -z "${option_build+'true'}" ]] && build_packages
-    [[ ! -z "${option_report+'true'}" ]] && report "Updated packages" "${updated[@]}"
-    [[ ! -z "${option_report+'true'}" ]] && report "Failed packages" "${failed[@]}"
+    [[ ! -z "${option_report+'true'}" ]] && report message "Updated packages" "${updated[@]}"
+    [[ ! -z "${option_report+'true'}" ]] && report output_issue_info "Failed build packages" "${failed[@]}" 
     git status
     # git commit -a -m "Add changes"
 fi
