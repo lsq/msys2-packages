@@ -331,8 +331,9 @@ build_packages() {
     local zstd_files=(*pkg.tar.zst)
     db_files=(mlsq*)
     if [ -e "${zstd_files[0]}" ]; then
-        test -n "$db_files" && rm -rf mlsq*
+        # test -n "$db_files" && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
+        repo-add -R "mlsq.db.tar.zst" *.pkg.tar.zst
 
         [ "$uploadable" == 1 ] && echo "uploadable=1"
         echo "uploadable=${uploadable}" >>"$GITHUB_OUTPUT"
