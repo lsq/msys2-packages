@@ -71,7 +71,7 @@ output_issue_info() {
     message "${@}"
     if [ ! -f issue.md ];then
         local bjTime=$(echo "Beijing time: $(TZ='Asia/Shanghai' date)")
-        local run_job=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == "check_update") | .url, (.steps[] | select(.name == "build") | "#step:\(.number):1")' | tr -d "\n")
+        local run_job=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name | startswith("check_update")) | .url, (.steps[] | select(.name == "build") | "#step:\(.number):1")' | tr -d "\n")
         cat > issue.md <<EOF
 Action runner: [$GITHUB_WORKFLOW/$GITHUB_JOB/$GITHUB_RUN_NUMBER](https://github.com/lsq/msys2-packages/actions/runs/$GITHUB_RUN_ID) at [$bjTime]($run_job)
 |package name|old version|new version|install type|
@@ -331,9 +331,8 @@ build_packages() {
     local zstd_files=(*pkg.tar.zst)
     db_files=(mlsq*)
     if [ -e "${zstd_files[0]}" ]; then
-        # test -n "$db_files" && rm -rf mlsq*
+        test -n "$db_files" && rm -rf mlsq*
         repo-add "mlsq.db.tar.zst" *.pkg.tar.zst
-        repo-add -R "mlsq.db.tar.zst" *.pkg.tar.zst
 
         [ "$uploadable" == 1 ] && echo "uploadable=1"
         echo "uploadable=${uploadable}" >>"$GITHUB_OUTPUT"
