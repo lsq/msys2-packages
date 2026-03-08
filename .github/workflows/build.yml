@@ -95,6 +95,18 @@ jobs:
 
       # https://github.com/marketplace/actions/create-release
       # https://github.com/marketplace/actions/create-update-github-release
+
+      - name: Notify build failed information
+        if: ${{ env.issueflag == 1 }}
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: 7
+          body: |
+            ${{ steps.build.outputs.issueBody }}
+          emoji: 'eyes'
+
       - name: Push changes
         if: ${{ env.pushflag == 1 }}
         uses: ad-m/github-push-action@master
