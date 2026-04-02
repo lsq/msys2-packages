@@ -5,7 +5,7 @@ _realname=libiconv
 pkgbase=mingw-w64-${_realname}
 pkgname=(${MINGW_PACKAGE_PREFIX}-${_realname} ${MINGW_PACKAGE_PREFIX}-iconv)
 pkgdesc='Character encoding conversion library and utility (mingw-w64)'
-pkgver=1.19.r1320.a8850dc
+pkgver=1.19.r1322.9d19c66
 pkgrel=1
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -33,7 +33,6 @@ sha256sums=('SKIP'
             '99c736f662fd4002524bd2cda700141fe9a7ed2e4bee717e7031705daff4f453'
             'cb3747faf07c80cd457785ca432119df0fe544fd3c55634676cb993c359d9663'
             '89d5c0f666e50a0186cfb142ba7b77e8fe1ac4d65bdfd9ae14ae8d2f0045a87c'
-            # '6b6e2393840f4dc6067587165777b1a07978f4c05247d7c1010a45ad251bbeeb'
             '56e7ec406bf42eb66b1d972f20d229f7a76ba00c38c7b4403bf348875704baae')
 validpgpkeys=('9001B85AF9E1B83DF1BDA942F5BE8B267C6A406D')  # "Bruno Haible (Open Source Development) <bruno@clisp.org>"
 
