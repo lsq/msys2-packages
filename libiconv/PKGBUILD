@@ -26,14 +26,14 @@ source=("$_realname"::"git+${surl}"
         0005-print-gbk-cp936.patch
         0008-iconv-win32-utf8.patch
         0002-fix-cr-for-awk-in-configure.all.patch
-        fix-pointer-buf.patch
+        # fix-pointer-buf.patch
         iconv.pc)
 sha256sums=('SKIP'
             'cb2b1cca44c9b9bd11c3bd33997c10d22dff263542275324c88f34b59910ef87'
             '99c736f662fd4002524bd2cda700141fe9a7ed2e4bee717e7031705daff4f453'
             'cb3747faf07c80cd457785ca432119df0fe544fd3c55634676cb993c359d9663'
             '89d5c0f666e50a0186cfb142ba7b77e8fe1ac4d65bdfd9ae14ae8d2f0045a87c'
-            '6b6e2393840f4dc6067587165777b1a07978f4c05247d7c1010a45ad251bbeeb'
+            # '6b6e2393840f4dc6067587165777b1a07978f4c05247d7c1010a45ad251bbeeb'
             '56e7ec406bf42eb66b1d972f20d229f7a76ba00c38c7b4403bf348875704baae')
 validpgpkeys=('9001B85AF9E1B83DF1BDA942F5BE8B267C6A406D')  # "Bruno Haible (Open Source Development) <bruno@clisp.org>"
 
@@ -71,8 +71,8 @@ prepare() {
   cp -f gnulib/lib/localcharset.c libcharset/lib/localcharset.c
   # alias CP936 to CP936, not GBK
   sed -i 's/\(CP936\x22, *\)\("GBK"\)/\1"CP936" },\n    { "GBK",     \2/' libcharset/lib/localcharset.c
+    # fix-pointer-buf.patch \
   apply_patch_with_msg \
-    fix-pointer-buf.patch \
     0003-add-cp65001-as-utf8-alias.patch \
     0005-print-gbk-cp936.patch \
     0008-iconv-win32-utf8.patch
