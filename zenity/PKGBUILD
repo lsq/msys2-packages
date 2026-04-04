@@ -3,7 +3,7 @@
 _realname=zenity
 # pkgbase=mingw-w64-${_realname}-git
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
-pkgver=4.2.2.r2925.025d9e51
+pkgver=4.2.2.r2926.276adab0
 pkgrel=1
 pkgdesc="The GNOME port of the venerable 'dialog' program"
 arch=('any')
