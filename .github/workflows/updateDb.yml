@@ -74,7 +74,7 @@ jobs:
           ls -R *
 
       - name: Upload to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             downloaded_assets/*.pkg.tar.zst
