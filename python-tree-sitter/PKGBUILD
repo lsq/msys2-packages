@@ -4,7 +4,7 @@
 _realname=tree-sitter
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.25.2.r373.d99f796
+pkgver=0.25.2.r375.2d3fb3a
 pkgrel=1
 pkgdesc="Python bindings to the Tree-sitter parsing library"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
