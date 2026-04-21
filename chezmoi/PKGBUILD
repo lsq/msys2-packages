@@ -5,7 +5,7 @@ _realname=chezmoi
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgdesc='Manage your dotfiles across multiple diverse machines, securely.'
-pkgver=2.70.2.r5678.2936627a4
+pkgver=2.70.1.r5678.2936627a4
 pkgrel=1
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -50,11 +50,15 @@ build() {
   # mingw32-make STRIP=true
   # make install STRIP=true DESTDIR="$(pwd)"
   mingw32-make build-in-git-working-copy || msg2 "build failed"
+  file ./chezmoi.exe
+  ./chezmoi --version && ./chezmoi --help
 }
-
 
 package() {
   cd "${srcdir}/${_realname}"
-  mingw32-make install DESTDIR="${pkgdir}"
+  file ./chezmoi.exe
+  MSYS2_ARG_CONV_EXCL="MINGW_PREFIX=" \
+  install -D -m 755 --target-directory "${pkgdir}/${MINGW_PREFIX}/bin" chezmoi
+  file "${pkgdir}/${MINGW_PREFIX}/bin/chezmoi.exe"
   ls -R "${pkgdir}"
 }
