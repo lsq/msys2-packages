@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - uses: robinraju/release-downloader@v1.12
+      - uses: robinraju/release-downloader@v1.13
         with:
           out-file-path: downloaded_assets
           latest: true
