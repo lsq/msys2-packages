@@ -1,0 +1,66 @@
+# Maintainer: Alexey Pavlov <Alexpux@gmail.com>
+# Contributor: Renato Silva <br.renatosilva@gmail.com>
+
+_realname=chezmoi
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgdesc='Manage your dotfiles across multiple diverse machines, securely.'
+pkgver=2.70.2.r5678.2936627a4
+pkgrel=1
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url='https://github.com/twpayne/chezmoi'
+# surl='https://github.com/lsq/libiconv.git'
+surl='https://github.com/twpayne/chezmoi'
+# surl='/c/Users/Administrator/github/libiconv'
+license=('spdx:GPL-3.0-or-later')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-go")
+source=("$_realname"::"git+${surl}"
+        # fix-pointer-buf.patch
+        )
+sha256sums=('SKIP')
+#options=('!strip')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 -i "${srcdir}/${_patch}"
+  done
+}
+
+pkgver() {
+    cd "${srcdir}/${_realname}"
+
+    latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
+    # latest_commit_hash=$(git log -1 --format="%h")
+    # echo "$latest_version_published.$latest_commit_hash"
+    printf "%s.r%s.%s" $latest_version_published $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
+}
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+
+  msg2 "运行 ..."
+  sed -i 's/-o \/dev\/null/ /' Makefile
+}
+
+build() {
+  cd "${srcdir}/${_realname}"
+  # mingw32-make STRIP=true
+  # make install STRIP=true DESTDIR="$(pwd)"
+  mingw32-make build-windows || msg2 "build failed"
+  file ./chezmoi.exe
+  ./chezmoi --version && ./chezmoi --help
+}
+
+package() {
+  cd "${srcdir}/${_realname}"
+  file ./chezmoi.exe
+  MSYS2_ARG_CONV_EXCL="MINGW_PREFIX=" \
+  install -D -m 755 --target-directory "${pkgdir}/${MINGW_PREFIX}/bin" chezmoi
+  file "${pkgdir}/${MINGW_PREFIX}/bin/chezmoi.exe"
+  ls -R "${pkgdir}"
+}

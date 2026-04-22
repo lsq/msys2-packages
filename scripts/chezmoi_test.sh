@@ -7,7 +7,7 @@ cd $scriptdir/../$pkg
 install_flag=''
 make_option="MINGW_ARCH=$make_type"
 makepkg="makepkg-mingw"
-pkg_config=PKGBUILD
+pkg_config=PKGBUILD.bld
 eval "${make_option} $makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --cleanbuild --force $install_flag -p $pkg_config"
 ls
 cd $scriptdir/../
