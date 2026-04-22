@@ -21,6 +21,7 @@ source=("$_realname"::"git+${surl}"
         # fix-pointer-buf.patch
         )
 sha256sums=('SKIP')
+options=('!strip')
 
 apply_patch_with_msg() {
   for _patch in "$@"
