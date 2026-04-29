@@ -5,7 +5,7 @@ _realname=pyrefly
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.63.0
+pkgver=0.63.1
 pkgrel=1
 pkgdesc="A fast type checker and IDE for Python (mingw-w64)"
 arch=('any')
@@ -23,7 +23,7 @@ makedepends=(
 )
 options=('!strip')
 source=("${_realname}-${pkgver}.tar.gz::${msys2_repository_url}/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('a3e3fd8284e9c4b97a82127bb25d97a6e25f95c4f2e52927f2dc4062e603d9a8')
+sha256sums=('8812f78495ced3c28fcdcb9880c4b7abf6a4dae957af55896c158a91ce0e374a')
 noextract=(${_realname}-${pkgver}.tar.gz)
 
 prepare() {
