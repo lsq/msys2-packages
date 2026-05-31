@@ -33,3 +33,5 @@
 |25|python-vim-vint|ucrt64|0|git|0|
 |26|python-yamllint|ucrt64|0|git|0|
 |27|chezmoi|ucrt64|0|git|0|
+|28|localsend|ucrt64|0|git|0|
+|29|localgo|ucrt64|0|git|0|
