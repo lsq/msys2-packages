@@ -97,7 +97,7 @@ restore() {
     # ref=("${eval_name[@]}")
     local element
 
-    for element in ${!eval_name[@]}; do
+    for element in "${!eval_name[@]}"; do
         ref["$element"]="${eval_name[$element]}"
     done
 }
@@ -184,9 +184,9 @@ download_release() {
     dirs="$2"
     # [ ! -d "$scriptdir"/files ] && mkdir "$scriptdir"/files
     [ ! -d "$dirs" ] && mkdir -p "$dirs"
-    release_info $repo release_infos
+    release_info "$repo" release_infos
     declare -p release_infos
-    for url in ${release_infos[@]}; do
+    for url in "${release_infos[@]}"; do
         download_url=${url//\"/}
         fileName=$(basename "${download_url}")
         async "download_url $download_url $dirs $fileName" success error
