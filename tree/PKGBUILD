@@ -25,8 +25,14 @@ sha256sums=('SKIP')
 
 pkgver() {
   cd "${srcdir}/${_realname}"
-  # git fetch upstream
-  git remote add upstream https://github.com/Old-Man-Programmer/tree && latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
+  if ! git remote | grep -q "^upstream";then
+    git remote add upstream https://github.com/Old-Man-Programmer/tree
+    git fetch upstream
+  else
+    git remote add ups https://github.com/Old-Man-Programmer/tree
+    git fetch ups
+  fi
+  latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
   # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
   printf "%s.r%s.%s" $latest_version_published $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
   # printf "%s" "$(git describe --abbrev=0)"
