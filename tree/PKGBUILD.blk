@@ -25,8 +25,13 @@ sha256sums=('SKIP')
 
 pkgver() {
   cd "${srcdir}/${_realname}"
-  # git fetch upstream
-  git remote add upstream https://github.com/Old-Man-Programmer/tree && latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
+  git remote -v > log.txt
+  echo '----------------------' >> log.txt
+  git remote add upstream https://github.com/Old-Man-Programmer/tree
+  echo '----------------------' >> log.txt
+  git remote -v >> log.txt
+  git fetch upstream
+  latest_version_published=$(git describe --tags --abbrev=0 | tail -1 | sed 's/^v//')
   # printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
   printf "%s.r%s.%s" $latest_version_published $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
   # printf "%s" "$(git describe --abbrev=0)"
@@ -35,6 +40,7 @@ pkgver() {
 prepare() {
   cd "${srcdir}"/${_realname}
   sed -i 's|\(prefix = \)/usr.*$|\1${PREFIX}|' Make_ming.mak
+  cat log.txt
   # git checkout windows
   # git rebase master windows
   # meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
