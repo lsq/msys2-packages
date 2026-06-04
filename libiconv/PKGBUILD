@@ -6,7 +6,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=(${MINGW_PACKAGE_PREFIX}-${_realname} ${MINGW_PACKAGE_PREFIX}-iconv)
 pkgdesc='Character encoding conversion library and utility (mingw-w64)'
 pkgver=1.19.r1322.9d19c66
-pkgrel=1
+pkgrel=2
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://www.gnu.org/software/libiconv/'
@@ -64,7 +64,6 @@ prepare() {
 
   msg2 "运行 ./autopull.sh ..."
   ./autopull.sh
-  #autoconf -fiv
     # 0002-fix-cr-for-awk-in-configure.all.patch \
   # update localcharset
   cp -f gnulib/lib/localcharset.c libcharset/lib/localcharset.c
@@ -80,6 +79,7 @@ prepare() {
   sed -i '/conv_t cd = (conv_t) icd;/{:a;N;s/^\(  conv_t cd = (conv_t) icd;\n  if (inbuf.*\)/  if (icd == NULL || icd == (iconv_t)(-1)) {\n      return -1;\n  }\n\1/;}' lib/iconv.c
   msg2 "运行 ./autogen.sh ..."
   ./autogen.sh
+  autoconf -fiv
   regenerate_files
 
   sed -i 's/\(ac_cs_awk_cr=\x27\\\)\\\(r\x27\)/\1\2/' configure
