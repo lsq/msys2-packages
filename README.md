@@ -35,3 +35,4 @@
 |27|chezmoi|ucrt64|0|git|0|
 |28|localsend|ucrt64|0|git|0|
 |29|localgo|ucrt64|0|git|0|
+|30|python-vscode-common-python-lsp|ucrt64|0|tar|0|

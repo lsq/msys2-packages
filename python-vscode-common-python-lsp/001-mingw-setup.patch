@@ -1,0 +1,19 @@
+diff -aurN -x '\.git' a/setup.py b/setup.py
+--- a/setup.py
++++ b/setup.py
+@@ -1,5 +1,5 @@
+ from os import path
+ from platform import system
+-from sysconfig import get_config_var
++from sysconfig import get_config_var, get_platform
+ 
+ from setuptools import Extension, find_packages, setup
+@@ -21,7 +21,7 @@
+ if limited_api := not get_config_var("Py_GIL_DISABLED"):
+    macros.append(("Py_LIMITED_API", "0x030A0000"))
+ 
+-if system() != "Windows":
++if system() != "Windows" or (system() == "Windows" and get_platform().startswith("mingw")):
+     cflags = ["-std=c11", "-fvisibility=hidden"]
+ else:
+     cflags = ["/std:c11", "/utf-8"]
