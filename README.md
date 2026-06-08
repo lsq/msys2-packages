@@ -36,3 +36,4 @@
 |28|localsend|ucrt64|0|git|0|
 |29|localgo|ucrt64|0|git|0|
 |30|python-vscode-common-python-lsp|ucrt64|0|tar|0|
+|31|compiledb|ucrt64|0|git|0|
