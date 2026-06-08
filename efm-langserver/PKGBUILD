@@ -1,17 +1,17 @@
 # Maintainer: Alexey Pavlov <Alexpux@gmail.com>
 # Contributor: Renato Silva <br.renatosilva@gmail.com>
 
-_realname=compiledb
+_realname=efm-langserver
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgdesc='Tool for generating Clang JSON Compilation Database files for make-based build systems.'
-pkgver=0.5.5.r157.f7f86c7
+pkgdesc='General purpose Language Server '
+pkgver=0.5.10.r162.e32f131
 pkgrel=1
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
-url='https://github.com/fcying/compiledb-go.git'
+url='https://github.com/mattn/efm-langserver.git'
 # surl='https://github.com/lsq/libiconv.git'
-surl='https://github.com/fcying/compiledb-go.git'
+surl='https://github.com/mattn/efm-langserver.git'
 # surl='/c/Users/Administrator/github/libiconv'
 license=('spdx:GPL-3.0-or-later')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
@@ -50,17 +50,17 @@ build() {
   cd "${srcdir}/${_realname}"
   # mingw32-make STRIP=true
   # make install STRIP=true DESTDIR="$(pwd)"
-  # mingw32-make build || msg2 "build failed"
+  mingw32-make build || msg2 "build failed"
 
-  ${MINGW_PREFIX}/bin/go build ./cmd/compiledb
-  find . -name "*.exe"
+  file ./${_realname}.exe
+  ./${_realname} -v
 }
 
 package() {
   cd "${srcdir}/${_realname}"
-  file ./compiledb.exe
+  file ./${_realname}.exe
   MSYS2_ARG_CONV_EXCL="MINGW_PREFIX=" \
-  install -D -m 755 --target-directory "${pkgdir}/${MINGW_PREFIX}/bin" compiledb
-  file "${pkgdir}/${MINGW_PREFIX}/bin/compiledb.exe"
+  install -D -m 755 --target-directory "${pkgdir}/${MINGW_PREFIX}/bin" ${_realname}
+  file "${pkgdir}/${MINGW_PREFIX}/bin/${_realname}.exe"
   ls -R "${pkgdir}"
 }
