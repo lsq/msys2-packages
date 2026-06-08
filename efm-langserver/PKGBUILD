@@ -43,6 +43,7 @@ pkgver() {
 prepare() {
   cd "${srcdir}/${_realname}"
 
+  sed -i '1s/\(BIN := efm-langserver\)$/\1.exe/' Makefile
   msg2 "运行 ..."
 }
 
@@ -52,8 +53,8 @@ build() {
   # make install STRIP=true DESTDIR="$(pwd)"
   mingw32-make build || msg2 "build failed"
 
-  file ./${_realname}.exe
-  ./${_realname} -v
+  file ./${_realname}
+  ./${_realname}.exe -v
 }
 
 package() {
