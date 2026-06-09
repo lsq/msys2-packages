@@ -6,7 +6,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgdesc='General purpose Language Server '
 pkgver=0.0.56.r479.9408c7e
-pkgrel=1
+pkgrel=2
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://github.com/mattn/efm-langserver.git'
@@ -44,6 +44,8 @@ prepare() {
   cd "${srcdir}/${_realname}"
 
   sed -i '1s/\(BIN := efm-langserver\)$/\1.exe/' Makefile
+  head Makefile
+  go env
   msg2 "运行 ..."
 }
 
