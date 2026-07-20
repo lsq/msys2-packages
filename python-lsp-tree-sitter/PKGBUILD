@@ -29,6 +29,7 @@ makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-setuptools"
   "${MINGW_PACKAGE_PREFIX}-python-setuptools-rust"
   "${MINGW_PACKAGE_PREFIX}-python-pkgconfig"
+  "${MINGW_PACKAGE_PREFIX}-python-uv-build"
   "${MINGW_PACKAGE_PREFIX}-cc"
   "git")
 checkdepends=(
