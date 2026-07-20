@@ -4,7 +4,7 @@
 _realname=yamllint
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=1.38.0.r606.754ccb9
+pkgver=1.38.0.r609.bcb2e69
 pkgrel=1
 pkgdesc="A linter for YAML files."
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
