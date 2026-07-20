@@ -32,7 +32,8 @@ prepare() {
   else
     echo "${srcdir}/${_realname}-${pkgver} extracted failed!"
     rm -rf ${srcdir}/${_realname}-${pkgver}
-    export MSYS=winsymlinks:nativestrict
+    # export MSYS=winsymlinks:nativestrict
+    export MSYS=winsymlinks:native
     tar xf "${srcdir}/${_realname}-${pkgver}.tar.gz" || bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz"
   fi
   cd "${_realname}-${pkgver}/pyrefly"
