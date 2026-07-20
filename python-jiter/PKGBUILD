@@ -50,7 +50,8 @@ build() {
   cd crates/jiter-python
   msg2 "$PATH"
   export _PYTHON_HOST_PLATFORM=$(python -c "import sysconfig, sys; sys.stdout.write(sysconfig.get_platform())")
-  export RUSTFLAGS="-L ${MINGW_PREFIX}/lib"
+  export py_ver=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+  export RUSTFLAGS="-L ${MINGW_PREFIX}/lib -l python${py_ver}"
   export PYO3_PYTHON="${MINGW_PREFIX}/bin/python.exe"
   ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
