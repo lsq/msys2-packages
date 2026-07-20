@@ -27,12 +27,13 @@ sha256sums=('a92476d5922edaf511020f8edaffaed91afeef64e0040f51a43151efa715136a')
 noextract=(${_realname}-${pkgver}.tar.gz)
 
 prepare() {
-  if bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz" 2>/dev/null ;then
-    echo "${srcdir}/${_realname}-${pkgver} extracted successed1"
+  if bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz" 2>/dev/null || bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz" 2>/dev/null;then
+    echo "${srcdir}/${_realname}-${pkgver} extracted successed!"
   else
+    echo "${srcdir}/${_realname}-${pkgver} extracted failed!"
     rm -rf ${srcdir}/${_realname}-${pkgver}
     export MSYS=winsymlinks:nativestrict
-    tar xf "${srcdir}/${_realname}-${pkgver}.tar.gz" #|| bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz"
+    tar xf "${srcdir}/${_realname}-${pkgver}.tar.gz" || bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz"
   fi
   cd "${_realname}-${pkgver}/pyrefly"
   export RUSTUP_TOOLCHAIN=nightly-x86_64-pc-windows-gnu
