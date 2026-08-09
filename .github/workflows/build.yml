@@ -108,6 +108,18 @@ jobs:
       #       ${{ steps.build.outputs.issueBody }}
       #     emoji: 'eyes'
 
+      - name: Notify build failed information
+        if: ${{ env.issueflag == 1 }}
+        uses: lsq/find-create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: 7
+          body-regex: |
+            '^This issue contains all built failed package information.'
+          body: |
+            ${{ steps.build.outputs.issueBody }}
+          edit-mode: append
+
       - name: Push changes
         if: ${{ env.pushflag == 1 }}
         uses: ad-m/github-push-action@master
