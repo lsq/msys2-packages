@@ -568,7 +568,7 @@ tar_check() {
     if [[ -e "$scriptdir"/"$pkg_name"/PKGBUILD.NEW ]]; then
         # newver=$(sed -n 's/pkgver=\(.*\)/\1/p' PKGBUILD.NEW)
         newver=$(get_pkg_version PKGBUILD.NEW no)
-    elif [[ "${pkg_build_force}" == "1" ]]; then
+    elif [[ "${pkg_build_force}" == "1" || $release_exist == "1" ]]; then
         newver="$oldver"
     fi
     check_old_exist "$pkg_name" "$newver" release_exist
