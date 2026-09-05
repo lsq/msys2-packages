@@ -23,7 +23,7 @@ jobs:
         with:
           repository: lsq/msys2-packages
           issue-number: 7
-          body-includes: This issue contains all built failed package information.
+          body-includes: Failed build package list
 
       - name: print commit id
         run: |

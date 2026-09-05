@@ -115,7 +115,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: 7
           body-regex: |
-            '^This issue contains all built failed package information.'
+            'Failed build package list'
           body: |
             ${{ steps.build.outputs.issueBody }}
           edit-mode: append
