@@ -20,6 +20,7 @@ depends=(
   "${MINGW_PACKAGE_PREFIX}-python-pygls"
   "${MINGW_PACKAGE_PREFIX}-python-colorama"
   "${MINGW_PACKAGE_PREFIX}-python-tree-sitter"
+  "${MINGW_PACKAGE_PREFIX}-python-jq"
 )
 makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-build"
