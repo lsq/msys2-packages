@@ -12,7 +12,7 @@
 |4|help2man|ucrt64|0|tar|1|
 |5|zenity|ucrt64|0|git|0|
 |6|python-jiter|ucrt64|0|tar|0|
-|7|tree|ucrt64|0|git|0|
+|7|python-jq|ucrt64|0|git|0|
 |8|fontforge|ucrt64|0|git|0|
 |9|bbe|ucrt64|0|git|0|
 |10|python-tree-sitter|ucrt64|0|git|0|
@@ -39,3 +39,4 @@
 |31|compiledb|ucrt64|0|git|0|
 |32|efm-langserver|ucrt64|0|git|0|
 |33|make-ls|ucrt64|0|git|0|
+|34|tree|ucrt64|0|git|0|
