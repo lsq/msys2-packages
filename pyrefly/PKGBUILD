@@ -37,11 +37,11 @@ prepare() {
     tar xf "${srcdir}/${_realname}-${pkgver}.tar.gz" || bsdtar -xf "${srcdir}/${_realname}-${pkgver}.tar.gz"
   fi
   cd "${_realname}-${pkgver}/pyrefly"
-  export RUSTUP_TOOLCHAIN=nightly-x86_64-pc-windows-gnu
+  # export RUSTUP_TOOLCHAIN=nightly-x86_64-pc-windows-gnu
   rustup set default-host x86_64-pc-windows-gnu
   rustup show
-  rustup default nightly-x86_64-pc-windows-gnu
-  rustup show
+  # rustup default nightly-x86_64-pc-windows-gnu
+  # rustup show
 
 #"$(rustc -vV | sed -n 's/host: //p')"
   cargo fetch --config='net.git-fetch-with-cli=true' --target x86_64-pc-windows-gnu

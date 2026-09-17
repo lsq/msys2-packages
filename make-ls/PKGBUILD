@@ -44,6 +44,7 @@ prepare() {
   cd "${srcdir}/${_realname}"
 
   sed -i '1s/\(BINARY := make-ls\)$/\1.exe/' Makefile
+  sed -i '1,10s/\("runtime"\)/\/\/\1/' internal/resolver/resolver.go
   head Makefile
   go env
   msg2 "运行 ..."

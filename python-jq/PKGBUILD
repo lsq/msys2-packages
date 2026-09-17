@@ -23,6 +23,7 @@ makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-setuptools"
   "${MINGW_PACKAGE_PREFIX}-python-pkgconfig"
   "${MINGW_PACKAGE_PREFIX}-cc"
+  "${MINGW_PACKAGE_PREFIX}-cython"
   "git")
 checkdepends=(
   # "${MINGW_PACKAGE_PREFIX}-python-dirty-equals"
