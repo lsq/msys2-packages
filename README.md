@@ -14,7 +14,7 @@
 |6|python-jiter|ucrt64|0|tar|0|
 |7|python-jq|ucrt64|0|git|0|
 |8|fontforge|ucrt64|0|git|0|
-|9|bbe|ucrt64|0|git|0|
+|9|python-tree-sitter-autoconf|ucrt64|0|git|0|
 |10|python-tree-sitter|ucrt64|0|git|0|
 |11|python-tree-sitter-make|ucrt64|0|git|0|
 |12|python-tree-sitter-bash|ucrt64|0|git|0|
@@ -40,3 +40,4 @@
 |32|efm-langserver|ucrt64|0|git|0|
 |33|make-ls|ucrt64|0|git|0|
 |34|tree|ucrt64|0|git|0|
+|35|bbe|ucrt64|0|git|0|
