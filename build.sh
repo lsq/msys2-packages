@@ -73,7 +73,6 @@ output_issue_info() {
         local bjTime=$(echo "Beijing time: $(TZ='Asia/Shanghai' date)")
         local run_job=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name | startswith("check_update")) | .url, (.steps[] | select(.name == "build") | "#step:\(.number):1")' | tr -d "\n")
         cat > issue.md <<EOF
-
 Action runner: [$GITHUB_WORKFLOW/$GITHUB_JOB/$GITHUB_RUN_NUMBER](https://github.com/lsq/msys2-packages/actions/runs/$GITHUB_RUN_ID) at [$bjTime]($run_job)
 |package name|old version|new version|install type|
 |:--:|:--:|:--:|:--:|
@@ -133,6 +132,7 @@ report() {
         echo "issueflag=1" >>$GITHUB_ENV
         body_contents=$(cat issue.md)
         echo "issueBody<<EOF" >> $GITHUB_OUTPUT
+        echo -e "\n-----------" >> $GITHUB_OUTPUT
         echo "$body_contents" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
     fi

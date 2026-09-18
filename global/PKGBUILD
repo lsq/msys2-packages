@@ -3,8 +3,8 @@
 _realname=global
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=6.6.14
-pkgrel=5
+pkgver=6.7
+pkgrel=1
 pkgdesc="GNU GLOBAL source code tagging system (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
@@ -28,7 +28,7 @@ source=("https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.gz"{,.s
         '001-global-6.6.2-mingw64.patch')
 sha256sums=('f6e7fd0b68aed292e85bb686616baf6551d5c9424adcddca11d808ba318cb320'
             'SKIP'
-            '4f3aa7d89e9734e5c0c1ddc02c9bfccabf0de0088b8949a3f407116c653c7a92')
+            'SKIP')
 validpgpkeys=('26F631B43D624A927E6F1C33969C3BE389DDA6EB') # Shigio YAMAGUCHI <shigio@gnu.org>
 install=${_realname}.install
 
