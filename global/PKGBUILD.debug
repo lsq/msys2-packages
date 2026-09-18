@@ -1,0 +1,75 @@
+#Maintainer: Ma, Leon <akml@163.com>
+
+_realname=global
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=6.6.14
+pkgrel=2
+pkgdesc="GNU GLOBAL source code tagging system (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url='https://www.gnu.org/software/global'
+license=('GPL3')
+depends=("${MINGW_PACKAGE_PREFIX}-libltdl"
+         "${MINGW_PACKAGE_PREFIX}-libsystre"
+         "${MINGW_PACKAGE_PREFIX}-ncurses"
+        )
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-cc"
+  "${MINGW_PACKAGE_PREFIX}-pkgconf"
+  "${MINGW_PACKAGE_PREFIX}-autotools"
+  "${MINGW_PACKAGE_PREFIX}-gperf"
+  ${MINGW_PACKAGE_PREFIX}-7zip
+)
+source=("https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.gz"{,.sig}
+        '001-global-6.6.2-mingw64.patch')
+sha256sums=('f6e7fd0b68aed292e85bb686616baf6551d5c9424adcddca11d808ba318cb320'
+            'SKIP'
+            '5d6e732d89f9a5eed65a66802cb6a4c84290a30ac36fb8aa0b537a2cb8c13c08')
+validpgpkeys=('26F631B43D624A927E6F1C33969C3BE389DDA6EB') # Shigio YAMAGUCHI <shigio@gnu.org>
+
+_global_srcdir=${_realname}-${pkgver}
+
+prepare() {
+  cd ${_global_srcdir}
+
+  patch -p1 -i "${srcdir}"/001-global-6.6.2-mingw64.patch
+  autoconf -fiv
+  # sed -i 's/\(CURSES_LIBS=".*-lncurses\)/\1 -lncursesw/' configure
+}
+
+build() {
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+
+  # export CPPFLAGS="-I${MINGW_PREFIX}/include/ncurses"
+  #export CURSES_LIBS="-lncursesw"
+  export lt_cv_deplibs_check_method='pass_all'
+
+  CFLAGS+=" -g -O0 -std=gnu17 -Wno-incompatible-pointer-types" \
+  CPPFLAGS="-I${MINGW_PREFIX}/include/ncurses" \
+  LDFLAGS="`pkgconf.exe --libs ncursesw` -Wl,--no-strip" \
+  STRIP=true \
+  ../${_global_srcdir}/configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --target=${MINGW_CHOST} \
+    --with-ncurses=${MINGW_PREFIX} \
+    --disable-silent-rules
+
+  mingw32-make STRIP=true
+}
+
+check() {
+  cd "${srcdir}"/build-${MSYSTEM}
+  mingw32-make check
+}
+
+package() {
+  cd "${srcdir}"/build-${MSYSTEM}
+  mingw32-make install STRIP=true DESTDIR="${pkgdir}"
+ 
+  cd "${srcdir}"/../pkg/"${MINGW_PACKAGE_PREFIX}-${_realname}${MINGW_PREFIX}" || exit 1
+  7z a -mx=9 "${_global_srcdir}_x64.zip" .
+  mv "${_global_srcdir}_x64.zip" "${srcdir}"/..
+}

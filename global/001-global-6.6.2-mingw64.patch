@@ -1,0 +1,219 @@
+diff -Naur global-6.6.14/libutil/path.c src/global-6.6.14/libutil/path.c
+--- global-6.6.14/libutil/path.c	2018-02-10 04:31:40.000000000 +0800
++++ src/global-6.6.14/libutil/path.c	2018-02-21 00:39:20.671989400 +0800
+@@ -185,8 +185,9 @@
+ 	} else
+ 		_fixpath(in_path, out_path);
+ #else
+-	_fullpath(out_path, in_path, MAXPATHLEN);
+-	canonpath(out_path);
++	out_path = _fullpath(out_path, in_path, MAXPATHLEN);
++	if (out_path)
++		canonpath(out_path);
+ #endif
+ 	return out_path;
+ }
+ diff -Naur global-6.6.14/libutil/path.c src/global-6.6.14/libutil/path.c
+--- global-6.6.14/gtags-cscope/exec.c	2018-02-10 04:31:40.000000000 +0800
++++ src/global-6.6.14/gtags-cscope/exec.c	2018-02-21 00:39:20.671989400 +0800
+@@ -92,3 +92,3 @@
+ 	 * No fork()/exec()/wait(), but rather a single libc call: */
+-	exitcode = spawnvp(P_WAIT, a, (const char* const*)argv);
++	exitcode = spawnvp(P_WAIT, a, (char* const*)argv);
+ #else
+--- global-6.6.14/plugin-factory/pygments-parser.c	2024-12-11 14:44:34.000000000 +0800
++++ src/global-6.6.14/plugin-factory/pygments-parser.c	2025-03-10 05:46:59.554227000 +0800
+@@ -90,6 +90,73 @@
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
+ #include <fcntl.h>
++
++int ExecuteCmd(const char* cmd, char* result, int result_len) {
++    SECURITY_ATTRIBUTES sa = { sizeof(sa), NULL, TRUE };
++    HANDLE hRead, hWrite;
++    STARTUPINFOA si = { 0 };
++    PROCESS_INFORMATION pi;
++
++    // 创建匿名管道‌:ml-citation{ref="4,7" data="citationList"}
++    if (!CreatePipe(&hRead, &hWrite, &sa, 0)) {
++        return -1;
++    }
++
++    si.cb = sizeof(si);
++    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
++    si.wShowWindow = SW_HIDE;  // 隐藏窗口‌:ml-citation{ref="4,7" data="citationList"}
++    si.hStdOutput = hWrite;
++    si.hStdError = hWrite;
++
++    // 创建进程执行命令‌:ml-citation{ref="4,5" data="citationList"}
++    if (!CreateProcessA(NULL, (LPSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
++        CloseHandle(hRead);
++        CloseHandle(hWrite);
++        return -1;
++    }
++
++    // 等待命令执行完成
++    WaitForSingleObject(pi.hProcess, INFINITE);
++
++    // 读取输出内容
++    DWORD bytesRead;
++    ReadFile(hRead, result, result_len - 1, &bytesRead, NULL);
++    result[bytesRead] = '\0';
++
++    // 清理资源
++    CloseHandle(pi.hProcess);
++    CloseHandle(pi.hThread);
++    CloseHandle(hRead);
++    CloseHandle(hWrite);
++    return 0;
++}
++void win_path_to_unix_path (char *win_path, char *unix_path)
++{
++  char *s;
++  char *b=win_path;
++  char p, n;
++  char *c = unix_path;
++  if ((s = strchr(win_path, ':')) != NULL) {
++      while (win_path <=s) {
++          n = *win_path;
++          if (b == win_path)
++              *unix_path = '/';
++          else
++              *unix_path = tolower(p);
++          win_path++;
++          unix_path++;
++          p = n;
++      }
++  }
++  for(;*win_path !='\0'; win_path++, unix_path++)
++    {
++      *unix_path = *win_path;
++      if (*win_path == '\\')
++		*unix_path= '/';
++   }
++  *unix_path = '\0';
++}
++
+ static HANDLE pid;
+ static void
+ start_process(const struct parser_param *param)
+@@ -101,14 +168,25 @@
+ 	char* arg;
+ 	char parser[MAX_PATH*2];
+ 	size_t len;
++	char pyPlatform[20];
++   char unix_path[MAX_PATH*2];
+ 
+ 	GetModuleFileName(NULL, parser, MAX_PATH);
+ 	arg = strrchr(parser, '\\');
+ 	strcpy(arg+1, PYGMENTS_PARSER);
+-	arg = malloc(sizeof(PYTHON) + strlen(parser) + sizeof(LANGMAP_OPTION) + strlen(param->langmap) + 2 + 1);
++	arg = malloc(sizeof(PYTHON) + strlen(parser) + sizeof(LANGMAP_OPTION) + strlen(param->langmap) + 4 + 1);
+ 	if (arg == NULL)
+ 		param->die("short of memory.");
+-	len = sprintf(arg, "%s \"%s\" %s", PYTHON, parser, LANGMAP_OPTION);
++	if (ExecuteCmd("python -c \"import os; print(os.name)\"", pyPlatform, sizeof(pyPlatform)) == 0) {
++        pyPlatform[strcspn(pyPlatform, "\n")] = '\0';
++		if (strcmp(pyPlatform, "posix") == 0) {
++		   win_path_to_unix_path(parser, unix_path);	
++           len = sprintf(arg, "%s \"%s\" %s", PYTHON, unix_path, LANGMAP_OPTION);
++		}
++        else {
++           len = sprintf(arg, "%s \"%s\" %s", PYTHON, parser, LANGMAP_OPTION);
++        }
++	}
+ 	copy_langmap_converting_cpp(arg + len, param->langmap);
+ 
+ 	sa.nLength = sizeof(sa);
+--- global-6.6.14/gtags.conf.in	2024-12-11 14:44:34.000000000 +0800
++++ src/global-6.6.14/gtags.conf.in	2025-12-18 13:28:01.522666000 +0800
+@@ -77,7 +77,7 @@
+ user-custom|User custom plugin parser:\
+ 	:tc=common:\
+ 	:langmap=c\:.c.h:\
+-	:gtags_parser=c\:$libdir/gtags/user-custom.la:
++	:gtags_parser=c\:$libdir/gtags/user-custom.dll:
+ #
+ # Plug-in parser to use Exuberant Ctags.
+ #
+@@ -87,8 +87,8 @@
+ #
+ exuberant-ctags|plugin-example|setting to use Exuberant Ctags plug-in parser:\
+ 	:tc=common:\
+-	:ctagscom=@EXUBERANT_CTAGS@:\
+-	:ctagslib=$libdir/gtags/exuberant-ctags.la:\
++	:ctagscom=@EXUBERANT_CTAGS_WIN@:\
++	:ctagslib=$libdir/gtags/exuberant-ctags.dll:\
+ 	:langmap=Ant\:(*.build.xml):\
+ 	:langmap=Asm\:.asm.ASM.s.S.A51(*.29[kK])(*.[68][68][kKsSxX])(*.[xX][68][68]):\
+ 	:langmap=Asp\:.asp.asa:\
+@@ -180,8 +180,8 @@
+ #
+ universal-ctags|setting to use Universal Ctags plug-in parser:\
+ 	:tc=common:\
+-	:ctagscom=@UNIVERSAL_CTAGS@:\
+-	:ctagslib=$libdir/gtags/universal-ctags.la:\
++	:ctagscom=@UNIVERSAL_CTAGS_WIN@:\
++	:ctagslib=$libdir/gtags/universal-ctags.dll:\
+ 	:langmap=Ada\:.adb.ads.Ada:\
+ 	:langmap=Ant\:(build.xml)(*.build.xml).ant.xml:\
+ 	:langmap=Asm\:.A51(*.29[kK])(*.[68][68][kKsSxX])(*.[xX][68][68]).asm.ASM.s.S:\
+@@ -369,8 +369,8 @@
+ #
+ pygments-parser|Pygments plug-in parser:\
+ 	:tc=common:\
+-	:ctagscom=@UNIVERSAL_CTAGS@:\
+-	:pygmentslib=$libdir/gtags/pygments-parser.la:\
++	:ctagscom=@UNIVERSAL_CTAGS_WIN@:\
++	:pygmentslib=$libdir/gtags/pygments-parser.dll:\
+ 	:langmap=ABAP\:.abap:\
+ 	:langmap=ANTLR\:.G.g:\
+ 	:langmap=ActionScript3\:.as:\
+--- global-6.6.14/configure.ac	2024-12-11 14:44:34.000000000 +0800
++++ src/global-6.6.14/configure.ac	2025-12-18 14:49:31.504634900 +0800
+@@ -360,6 +360,45 @@
+ AC_DEFINE_UNQUOTED(UNIVERSAL_CTAGS, "$UNIVERSAL_CTAGS", [Universal Ctags program.])
+ AC_SUBST(EXUBERANT_CTAGS)
+ AC_SUBST(UNIVERSAL_CTAGS)
++dnl# 检测是否在 MSYS/Cygwin/MinGW 环境，并准备 cygpath
++AC_MSG_CHECKING([whether to convert paths for Windows])
++AS_CASE([$host_os],
++    [*cygwin* | *mingw* | *msys*],
++    [
++        AC_MSG_RESULT([yes])
++        AC_PATH_PROG([CYGPATH], [cygpath], [:])
++    ],
++    [
++        AC_MSG_RESULT([no])
++        CYGPATH=:
++    ]
++)
++
++dnl# 定义一个 shell 函数用于路径转换（在 configure 运行时生效）
++dnl AC_CONFIG_COMMANDS_PRE([
++dnl     win_path() {
++dnl         if test "x$CYGPATH" != "x:"; then
++dnl             $CYGPATH -m "$1"
++dnl         else
++dnl             echo "$1"
++dnl         fi
++dnl     }
++dnl ])
++dnl 计算原始 POSIX 路径（例如 datadir 下的 global 子目录）
++dnl gtags_data_dir="${datadir}/global"
++
++dnl 转换为 Windows 路径（在 configure 执行时）
++AS_IF([test "x$CYGPATH" != "x:"], [
++    EXUBERANT_CTAGS_WIN=`$CYGPATH -m "$EXUBERANT_CTAGS" | sed 's/:/\\:/'`
++    UNIVERSAL_CTAGS_WIN=`$CYGPATH -m "$UNIVERSAL_CTAGS" | sed 's/:/\\:/'`
++], [
++    EXUBERANT_CTAGS_WIN="$EXUBERANT_CTAGS"
++    UNIVERSAL_CTAGS_WIN="$UNIVERSAL_CTAGS"
++])
++
++dnl 导出给 .in 文件替换使用
++AC_SUBST(EXUBERANT_CTAGS_WIN)
++AC_SUBST(UNIVERSAL_CTAGS_WIN)
+ 
+ dnl
+ dnl for POSIX sort program.
