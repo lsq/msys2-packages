@@ -1,9 +1,15 @@
 post_install() {
     echo ">>> global has been installed."
     echo ">>> Please edit /ucrt64/share/gtags/gtags.conf to configure ctagscom path."
+    # 从包名判断架构
+    if [[ "$pkgname" == *"-clang-"* ]] || [[ "$pkgname" == *"clang64"* ]]; then
+        _arch="clang64"
+    elif [[ "$pkgname" == *"-ucrt-"* ]] || [[ "$pkgname" == *"ucrt64"* ]]; then
+        _arch="ucrt64"
+    fi
     if command -v ctags >/dev/null 2>&1; then
         ctagscom=$(sed -n 's/:/\\\\:/p' <<<"$(cygpath -m "$(which ctags)")")
-        sed -i 's|\(:ctagscom=\).*\(:\\\)|\1'"$ctagscom"'\2|g' "${MINGW_PREFIX}/share/gtags/gtags.conf"
+        sed -i 's|\(:ctagscom=\).*\(:\\\)|\1'"$ctagscom"'\2|g' "${_arch}/share/gtags/gtags.conf"
     fi
 }
 
@@ -11,9 +17,15 @@ post_upgrade() {
     if [ "$(vercmp "$2" "$1")" -lt 0 ]; then
         echo ">>> Upgrading from a very old version! Check compatibility."
     fi
+    # 从包名判断架构
+    if [[ "$pkgname" == *"-clang-"* ]] || [[ "$pkgname" == *"clang64"* ]]; then
+        _arch="clang64"
+    elif [[ "$pkgname" == *"-ucrt-"* ]] || [[ "$pkgname" == *"ucrt64"* ]]; then
+        _arch="ucrt64"
+    fi
     if command -v ctags >/dev/null 2>&1; then
         ctagscom=$(sed -n 's/:/\\\\:/p' <<<"$(cygpath -m "$(which ctags)")")
-        sed -i 's|\(:ctagscom=\).*\(:\\\)|\1'"$ctagscom"'\2|g' "${MINGW_PREFIX}/share/gtags/gtags.conf"
+        sed -i 's|\(:ctagscom=\).*\(:\\\)|\1'"$ctagscom"'\2|g' "${_arch}/share/gtags/gtags.conf"
     fi
     echo ">>> global upgraded successfully."
 }
