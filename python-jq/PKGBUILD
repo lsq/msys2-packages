@@ -4,7 +4,7 @@
 _realname=jq
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=1.12.0.r377.cd7c501
+pkgver=1.12.0.r378.2018586
 pkgrel=1
 pkgdesc="Python bindings for jq"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
