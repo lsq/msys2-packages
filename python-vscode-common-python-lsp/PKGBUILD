@@ -4,7 +4,7 @@
 _realname=vscode-common-python-lsp
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.8.2
+pkgver=0.8.3
 pkgrel=1
 pkgdesc="Common package for VSCode extensions exposing Python tools over LSP"
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -37,7 +37,7 @@ checkdepends=(
 source=("${_realname}-${pkgver}.tar.gz::${msys2_repository_url}/archive/refs/tags/v${pkgver}.tar.gz")
 # source=("${_realname}"::"git+$url.git"
         # )
-sha256sums=('79f637255e3b7bd52dd591cbe57d3957b3f4029dff529e020cc8ad1dc3706e75')
+sha256sums=('7c40b76d4922d7605413d8d754c9bede720bf628a8ca514aaff9546adebb40b1')
 # sha256sums=('aa9')
 
 prepare() {
