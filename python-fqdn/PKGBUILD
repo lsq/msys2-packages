@@ -4,7 +4,7 @@
 _realname=fqdn
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=1.6.0.r107.fd47df0
+pkgver=1.6.0.r108.df16ddc
 pkgrel=1
 pkgdesc="RFC-compliant FQDN validation and manipulation for Python."
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
