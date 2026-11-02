@@ -315,7 +315,7 @@ build_packages() {
 
     sort_array updateinfos array_index
     # for item in ${!updateinfos[@]}
-    echo "Update PKGBUILD:" >>"$scriptdir/gitlog.txt"
+    echo "Update PKGBUILD($GITHUB_RUN_ID):" >>"$scriptdir/gitlog.txt"
     for index in "${array_index[@]}"; do
         echo "Processing key:  $index"
         eval "${updateinfos[$index]}"
@@ -403,12 +403,13 @@ build_package() {
         git add PKGBUILD
         # git commit -a -m "${package} update to version $newver($oldver)."
         echo "* $package $updatecls $newver($oldver)" >>"$scriptdir/gitlog.txt"
+        sed -i "s/\(Update PKGBUILD($GITHUB_RUN_ID):.*\)/\1\/${package}/" "${scriptdir}/gitlog.txt"
         cp -rf *.tar.zst ../files
     else
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built failed."
         failed["${package}"]="$str"
     fi
-    if [[ $oldver != $newver ]]; then
+    if [[ $oldver != "$newver" ]]; then
         # if printf "%s\0"  "${release_files[@]}"| grep -xqz -- ".*${pacakge}.*${oldver}.*.tar.zst";then
         # echo ".*${pacakge}.*${oldver}.*.tar.zst"
         # fi
@@ -631,7 +632,7 @@ git_check() {
         updateinfo=([pkg_name]="$pkg_name" [oldver]="$oldver" [newver]="$newver" [pkg_install_type]="$pkg_install_type" [pkg_as_dependency]="${info[pkg_as_dependency]}" [pkg_build_force]="${info[pkg_build_force]}")
         str=$(declare -p updateinfo)
         updateinfos["${info[pkg_build_order]}"]="$str"
-        if [[ $newver != $oldver ]]; then
+        if [[ $newver != "$oldver" ]]; then
            printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
        else
            printf "[1;34m::[$pkg_name][1;37m rebuild version:$newver==$oldver\n [0m"
@@ -721,9 +722,9 @@ checkPythonVersion() {
     currVersion=$(/ucrt64/bin/python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
     oldVersion=$(sed -n '1p' $scriptdir/scripts/pythonfiles.txt)
     echo -e "Current Version: ${currVersion}\nOld Version: ${oldVersion}"
-    if [[ $currVersion != $oldVersion ]]; then
+    if [[ $currVersion != "$oldVersion" ]]; then
         while read line; do
-            [[ $line == $oldVersion ]] && continue
+            [[ $line == "$oldVersion" ]] && continue
             echo "replace python package ${line}"
             sed -i 's#\(|'"$line"'|[^|]*|\)0#\11#' $scriptdir/README.md
         done<"$scriptdir/scripts/pythonfiles.txt"
