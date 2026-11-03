@@ -51,6 +51,18 @@ jobs:
           #location: C:\
           release: false
 
+      - uses: robinraju/release-downloader@v1.13
+        id: download_release
+        with:
+          out-file-path: files
+          latest: true
+          fileName: '*'
+
+      - name: List Download file
+        run: |
+          echo "release info: ${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}"
+          echo "release_infos=${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}" >>$GITHUB_ENV
+
       - name: check update
         id: check_update
         run: |

@@ -69,17 +69,17 @@ message() {
 
 output_issue_info() {
     message "${@}"
-    if [ ! -f issue.md ];then
+    if [ ! -f issue.md ]; then
         local bjTime=$(echo "Beijing time: $(TZ='Asia/Shanghai' date)")
         local run_job=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name | startswith("check_update")) | .url, (.steps[] | select(.name == "build") | "#step:\(.number):1")' | tr -d "\n")
-        cat > issue.md <<EOF
+        cat >issue.md <<EOF
 Action runner: [$GITHUB_WORKFLOW/$GITHUB_JOB/$GITHUB_RUN_NUMBER](https://github.com/lsq/msys2-packages/actions/runs/$GITHUB_RUN_ID) at [$bjTime]($run_job)
 |package name|old version|new version|install type|
 |:--:|:--:|:--:|:--:|
 EOF
     fi
 
-    printf '|%s|%s|%s|%s|\n' "${@}" >> issue.md
+    printf '|%s|%s|%s|%s|\n' "${@}" >>issue.md
 }
 
 header() {
@@ -117,24 +117,24 @@ report() {
         local arguments=("${package[pkg_name]}" "${package[oldver]}" ${package[newver]} "${package[pkg_install_type]}")
         type "${action}" &>/dev/null
 
-    	local status=$?
+        local status=$?
 
-    	(( status != 0 )) && {
-    	    printf "\"%s\" is neither a function nor a recognized command\n" "${action}";
-	    # unset _c
-	    return 1;
-    	}
+        ((status != 0)) && {
+            printf "\"%s\" is neither a function nor a recognized command\n" "${action}"
+            # unset _c
+            return 1
+        }
 
         "$action" "${arguments[@]}"
     done
     echo
-    if [ -f issue.md ];then
+    if [ -f issue.md ]; then
         echo "issueflag=1" >>$GITHUB_ENV
         body_contents=$(cat issue.md)
-        echo "issueBody<<EOF" >> $GITHUB_OUTPUT
-        echo -e "\n-----------" >> $GITHUB_OUTPUT
-        echo "$body_contents" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        echo "issueBody<<EOF" >>$GITHUB_OUTPUT
+        echo -e "\n-----------" >>$GITHUB_OUTPUT
+        echo "$body_contents" >>$GITHUB_OUTPUT
+        echo "EOF" >>$GITHUB_OUTPUT
     fi
 }
 
@@ -185,16 +185,18 @@ download_release() {
     dirs="$2"
     # [ ! -d "$scriptdir"/files ] && mkdir "$scriptdir"/files
     [ ! -d "$dirs" ] && mkdir -p "$dirs"
-    release_info "$repo" release_infos
-    declare -p release_infos
+    # 由于api接口限制，用action 替代
+    # release_info "$repo" release_infos
+    # declare -p release_infos
     for url in "${release_infos[@]}"; do
         download_url=${url//\"/}
         fileName=$(basename "${download_url}")
-        async "download_url $download_url $dirs $fileName" success error
+        [ ! -f "$dir"/"$fileName" ] && async "download_url $download_url $dirs $fileName" success error
     done
     wait
     ls "$dirs"/
 }
+
 release_info() {
     local repo json
     local -n arr2=$2
@@ -216,9 +218,9 @@ release_info() {
     )
     # declare -p arr2
     if [ ${#arr2[@]} -eq 0 ]; then
-    echo "Warning: No URLs extracted – API call may have failed!" >&2
-    exit 1  # 如果你想在这里退出
-fi
+        echo "Warning: No URLs extracted – API call may have failed!" >&2
+        exit 1 # 如果你想在这里退出
+    fi
 
 }
 
@@ -357,14 +359,14 @@ build_package() {
     newver=${pacakge_info[newver]}
     make_type=${pacakge_info[pkg_install_type]}
     case "$make_type" in
-        unix)
-            make_option=
-            makepkg=makepkg
-            ;;
-        mingw* | ucrt* | clangd*)
-            make_option="MINGW_ARCH=$make_type"
-            makepkg="makepkg-mingw"
-            ;;
+    unix)
+        make_option=
+        makepkg=makepkg
+        ;;
+    mingw* | ucrt* | clangd*)
+        make_option="MINGW_ARCH=$make_type"
+        makepkg="makepkg-mingw"
+        ;;
     esac
 
     if [[ "${pacakge_info[pkg_as_dependency]}" == 1 ]]; then
@@ -381,7 +383,7 @@ build_package() {
         sed -i -e "s/\(^pkgver=\)${oldver%-*}/\1${newver%-*}/" -e 's/^\(pkgrel=\).*/\11/' PKGBUILD
         updpkgsums
     else
-    #     echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
+        #     echo "* rebuild $package version $oldver" >>"$scriptdir/gitlog.txt"
         updatecls="rebuild"
         [[ ${pacakge_info[pkg_build_force]} == "1" ]] && sed -i 's/^\(pkgrel=\).*/\1'"$((++pkgrel))"'/' PKGBUILD
     fi
@@ -441,17 +443,20 @@ get_pkg_version() {
         # set +o allexport
         set +e +u +o pipefail 2>/dev/null || true
         pkgver() { :; }
- 
+
         # source PKGBUILD
-        source $pkgbuild >/dev/null 2>&1 || { echo "Error: Failed to source PKGBUILD." >&2; exit 1; }
+        source $pkgbuild >/dev/null 2>&1 || {
+            echo "Error: Failed to source PKGBUILD." >&2
+            exit 1
+        }
 
         # 重新定义 pkgver 为原始版本（覆盖占位）
         # eval "$(declare -f pkgver)"
         if [[ $fromFun == "yes" ]]; then
-        if declare -f pkgver >/dev/null; then
-            pkgver=$(pkgver)
-            # export pkgver
-        fi
+            if declare -f pkgver >/dev/null; then
+                pkgver=$(pkgver)
+                # export pkgver
+            fi
         fi
         # 检查变量是否存在
         if [[ -z "${pkgver+x}" ]] || [[ -z "${pkgrel+x}" ]]; then
@@ -483,8 +488,8 @@ get_pkg_version_mkg() {
     }
 
     local pkgver pkgrel
-    pkgver=$(awk '/^[[:space:]]*pkgver[[:space:]]*=/ { print $3; exit }' <<< "$srcinfo")
-    pkgrel=$(awk '/^[[:space:]]*pkgrel[[:space:]]*=/ { print $3; exit }' <<< "$srcinfo")
+    pkgver=$(awk '/^[[:space:]]*pkgver[[:space:]]*=/ { print $3; exit }' <<<"$srcinfo")
+    pkgrel=$(awk '/^[[:space:]]*pkgrel[[:space:]]*=/ { print $3; exit }' <<<"$srcinfo")
 
     if [[ -z "$pkgver" ]] || [[ -z "$pkgrel" ]]; then
         echo "Error: pkgver or pkgrel missing." >&2
@@ -524,19 +529,19 @@ get_pkgver_from_func() {
 
     # 在干净的子环境中执行 pkgver 并捕获输出
     # ver=$(
-        (
-            set +e +u +o pipefail 2>/dev/null || true
-            # pkgver() { :; }
-            source "$pkgbuild" >/dev/null 2>&1
-            # 重新定义 pkgver 为原始版本（覆盖占位）
-            # eval "$(declare -f pkgver)"
-            if declare -f pkgver >/dev/null; then
-                pkgver=$(pkgver)
-                # export pkgver
-            fi
-            # 执行 pkgver 并输出结果
-            printf '%s-%s\n' "$pkgver" "$pkgrel"
-        )
+    (
+        set +e +u +o pipefail 2>/dev/null || true
+        # pkgver() { :; }
+        source "$pkgbuild" >/dev/null 2>&1
+        # 重新定义 pkgver 为原始版本（覆盖占位）
+        # eval "$(declare -f pkgver)"
+        if declare -f pkgver >/dev/null; then
+            pkgver=$(pkgver)
+            # export pkgver
+        fi
+        # 执行 pkgver 并输出结果
+        printf '%s-%s\n' "$pkgver" "$pkgrel"
+    )
     # )
     # printf '%s' "$ver"
 }
@@ -633,9 +638,9 @@ git_check() {
         str=$(declare -p updateinfo)
         updateinfos["${info[pkg_build_order]}"]="$str"
         if [[ $newver != "$oldver" ]]; then
-           printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
-       else
-           printf "[1;34m::[$pkg_name][1;37m rebuild version:$newver==$oldver\n [0m"
+            printf "[1;34m::[$pkg_name][1;37m new version:$newver\n [0m"
+        else
+            printf "[1;34m::[$pkg_name][1;37m rebuild version:$newver==$oldver\n [0m"
         fi
     fi
     remove_new_file ofiles
@@ -657,12 +662,12 @@ remove_new_file() {
 
 check_update() {
     # local -A updateinfo
-    local item first_build_tag release_infos
+    local item first_build_tag # release_infos
     updateable=0
 
     read_config
     # release_info lsq/vime release_infos
-    download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
+    # download_release "$GITHUB_REPOSITORY" "$scriptdir/files"
     # release_info "$GITHUB_REPOSITORY" release_infos
     # declare -p release_infos
     if [[ ${#release_infos[@]} == 0 ]]; then
@@ -727,7 +732,7 @@ checkPythonVersion() {
             [[ $line == "$oldVersion" ]] && continue
             echo "replace python package ${line}"
             sed -i 's#\(|'"$line"'|[^|]*|\)0#\11#' $scriptdir/README.md
-        done<"$scriptdir/scripts/pythonfiles.txt"
+        done <"$scriptdir/scripts/pythonfiles.txt"
         sed -i "1{s/${oldVersion}/${currVersion}/}" $scriptdir/scripts/pythonfiles.txt
         git status
         git add $scriptdir/scripts/pythonfiles.txt
@@ -783,7 +788,7 @@ if [[ "${BASH_SOURCE}" = "${0}" ]]; then
     # https://www.geeksforgeeks.org/bash-scripting-how-to-check-if-variable-is-set/
     [[ ! -z "${option_build+'true'}" ]] && build_packages
     [[ ! -z "${option_report+'true'}" ]] && report message "Updated packages" "${updated[@]}"
-    [[ ! -z "${option_report+'true'}" ]] && report output_issue_info "Failed build packages" "${failed[@]}" 
+    [[ ! -z "${option_report+'true'}" ]] && report output_issue_info "Failed build packages" "${failed[@]}"
     git status
     # git commit -a -m "Add changes"
 fi
