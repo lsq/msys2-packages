@@ -60,7 +60,7 @@ jobs:
 
       - name: List Download file
         run: |
-          release_infos=(${{ join(fromJson(steps.download_release.outputs.downloaded_files)), ' ' }})
+          release_infos=($(sed 's/\\/\//g' <<<"${{ join(fromJson(steps.download_release.outputs.downloaded_files), ' ') }}"))
           echo "release info: ${release_infos}"
           echo "release_infos=${release_infos}" >>$GITHUB_ENV
 

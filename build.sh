@@ -144,7 +144,10 @@ git_log() {
     cd "$scriptdir" || exit 1
     if ! git diff-index --cached --quiet HEAD; then
         git status
-        [ -f "${scriptdir}/gitlog.txt" ] && git commit -F "${scriptdir}/gitlog.txt"
+        # 删除第一行尾/
+        [ -f "${scriptdir}/gitlog.txt" ] && cat "${scriptdir}/gitlog.txt"
+        sed -i '1s/\/$//' "${scriptdir}/gitlog.txt"
+        git commit -F "${scriptdir}/gitlog.txt"
     fi
 
     local git_now=$(git log -1 --format=%h)
@@ -165,7 +168,7 @@ git_log() {
     # sed ':a;N;$!ba;s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
     # sed ':a;$!{N;ba};s/\*/\n- /g;s/\n/\\n/g' <<<"$log_md" > "$scriptdir"/gitlog.txt
     sed 'H;1h;$!d;x;s/\\\*/\n  - /g;' <<<"$log_md" >"$scriptdir"/gitlog.txt
-    cat "$scriptdir/gitlog.txt"
+    cat "${scriptdir}/gitlog.txt"
 
 }
 download_url() {
@@ -317,7 +320,7 @@ build_packages() {
 
     sort_array updateinfos array_index
     # for item in ${!updateinfos[@]}
-    echo "Update PKGBUILD($GITHUB_RUN_ID):" >>"$scriptdir/gitlog.txt"
+    echo "Update PKGBUILD($GITHUB_RUN_NUMBER):" >>"$scriptdir/gitlog.txt"
     for index in "${array_index[@]}"; do
         echo "Processing key:  $index"
         eval "${updateinfos[$index]}"
@@ -405,7 +408,7 @@ build_package() {
         git add PKGBUILD
         # git commit -a -m "${package} update to version $newver($oldver)."
         echo "* $package $updatecls $newver($oldver)" >>"$scriptdir/gitlog.txt"
-        sed -i "s/\(Update PKGBUILD($GITHUB_RUN_ID):.*\)/\1\/${package}/" "${scriptdir}/gitlog.txt"
+        sed -i "s/\(Update PKGBUILD($GITHUB_RUN_NUMBER):.*\)/\1${package}\//" "${scriptdir}/gitlog.txt"
         cp -rf *.tar.zst ../files
     else
         echo -e "${d_colors[yellow]}${package}${d_colors[normal]} built failed."
