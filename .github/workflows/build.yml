@@ -60,8 +60,9 @@ jobs:
 
       - name: List Download file
         run: |
-          echo "release info: ${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}"
-          echo "release_infos=${{ fromJson(steps.download_release.outputs.downloaded_files)[0] }}" >>$GITHUB_ENV
+          release_infos=(${{ join(fromJson(steps.download_release.outputs.downloaded_files)), ' ' }})
+          echo "release info: ${release_infos}"
+          echo "release_infos=${release_infos}" >>$GITHUB_ENV
 
       - name: check update
         id: check_update
