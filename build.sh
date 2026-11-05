@@ -146,7 +146,7 @@ git_log() {
         git status
         # 删除第一行尾/
         [ -f "${scriptdir}/gitlog.txt" ] && cat "${scriptdir}/gitlog.txt"
-        sed -i '1s/\/$//' "${scriptdir}/gitlog.txt"
+        sed -i '1s/\/$/\n/' "${scriptdir}/gitlog.txt"
         git commit -F "${scriptdir}/gitlog.txt"
     fi
 
