@@ -4,7 +4,7 @@
 _realname=lsp-tree-sitter
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.2.19.r144.447ab2b
+pkgver=0.2.20.r147.8397460
 pkgrel=1
 pkgdesc="A library to create language servers."
 # mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
