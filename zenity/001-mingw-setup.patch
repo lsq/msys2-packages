@@ -1374,7 +1374,7 @@ diff -aurN -x '\.git' a/src/progress.c b/src/progress.c
 +return ret;
 +}
 +
-+DWORD getppid() {
++DWORD getppid(void) {
 +  HANDLE hSnapshot = INVALID_HANDLE_VALUE;
 +  PROCESSENTRY32 pe32;
 +  DWORD ppid = 0, pid = GetCurrentProcessId();

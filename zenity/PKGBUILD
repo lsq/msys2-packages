@@ -60,7 +60,9 @@ prepare() {
 build() {
 
   cd "${srcdir}"/${_realname}
-  meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}"
+  export CFLAGS="$CFLAGS -Wno-error=undef -Wno-error=strict-prototypes -DSETLOCALE_NULL_ALL_MTSAFE=0 -DSETLOCALE_NULL_ONE_MTSAFE=0"
+  meson setup --wipe --prefix $(cygpath -am "${pkgdir}/${MINGW_PREFIX}") "${MESON_BUILD_DIR}"
+  # meson setup --prefix `cygpath -am "${pkgdir}/${MINGW_PREFIX}"` "${MESON_BUILD_DIR}" --reconfigure -Dwerror=false -Dc_args="$CFLAGS -Wno-error"
   meson test -C "${MESON_BUILD_DIR}"
 }
 
