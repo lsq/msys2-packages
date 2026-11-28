@@ -3,7 +3,7 @@
 _realname=zenity
 # pkgbase=mingw-w64-${_realname}-git
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
-pkgver=4.2.2.r2946.c58a58d4
+pkgver=3.44.6.r2962.b4a7e52f
 pkgrel=1
 pkgdesc="The GNOME port of the venerable 'dialog' program"
 arch=('any')
@@ -35,7 +35,7 @@ source=("${_realname}"::"git+$url.git"
         "001-mingw-setup.patch"
         )
 sha256sums=('SKIP'
-            '92128e9aaaa97703ca68052f11ee904f80b545e2eb47d70959af427912016799')
+            'a2b8e71d53f56590ce10e1abba30f1c0465fbd4ba50787a9ed2e2650cfe2a2d4')
 MESON_BUILD_DIR="_build"
 
 pkgver() {
